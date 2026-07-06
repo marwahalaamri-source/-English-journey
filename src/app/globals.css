@@ -1,0 +1,107 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --bg: #fbf4ea;
+  --bg-soft: #f5ebda;
+  --surface: #fffdf9;
+  --surface-hover: #fff8ee;
+  --border: #ecdfc7;
+  --text: #2b241c;
+  --text-muted: #8a7c65;
+  --accent: #7fc7ea;
+  --accent-strong: #2d8ac0;
+  --accent-soft: #e3f4fc;
+  --accent-contrast: #10344a;
+  --gold: #e9b949;
+  --danger: #d9695a;
+  --shadow-color: 30 20% 60%;
+}
+
+:root[data-theme="dark"] {
+  --bg: #1c1712;
+  --bg-soft: #241d16;
+  --surface: #2a2119;
+  --surface-hover: #322820;
+  --border: #3c3125;
+  --text: #f6efe2;
+  --text-muted: #b6a68c;
+  --accent: #7fc7ea;
+  --accent-strong: #6fb8e0;
+  --accent-soft: #253844;
+  --accent-contrast: #eaf7ff;
+  --gold: #f0c664;
+  --danger: #e08a7d;
+  --shadow-color: 220 40% 4%;
+}
+
+@theme inline {
+  --color-cream: var(--bg);
+  --color-cream-soft: var(--bg-soft);
+  --color-surface: var(--surface);
+  --color-surface-hover: var(--surface-hover);
+  --color-border: var(--border);
+  --color-ink: var(--text);
+  --color-ink-muted: var(--text-muted);
+  --color-accent: var(--accent);
+  --color-accent-strong: var(--accent-strong);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-contrast: var(--accent-contrast);
+  --color-gold: var(--gold);
+  --color-danger: var(--danger);
+
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --font-arabic: var(--font-tajawal);
+}
+
+html {
+  color-scheme: light;
+}
+
+html[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  transition:
+    background-color 0.25s ease,
+    color 0.25s ease;
+}
+
+html[dir="rtl"] body {
+  font-family: var(--font-arabic), var(--font-sans), sans-serif;
+}
+
+* {
+  border-color: var(--border);
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--accent-contrast);
+}
+
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-none {
+  scrollbar-width: none;
+}
+
+.card-shadow {
+  box-shadow:
+    0 1px 2px hsl(var(--shadow-color) / 0.06),
+    0 8px 24px -8px hsl(var(--shadow-color) / 0.18);
+}
+
+.tap-scale {
+  transition: transform 0.12s ease;
+}
+.tap-scale:active {
+  transform: scale(0.96);
+}
