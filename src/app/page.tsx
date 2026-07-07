@@ -11,7 +11,7 @@ import { getMonthKey } from "@/lib/months";
 import { REQUIRED_TASK_COUNT } from "@/lib/tasks";
 import { requiredCompletedCount } from "@/lib/selectors";
 import { getLatestMessage, subscribeToMessages, type TeamMessage } from "@/lib/teamWall";
-import { getUserMeta } from "@/lib/users";
+import { getUserMetaOrFallback } from "@/lib/users";
 
 function greetingKey(): "greetingMorning" | "greetingAfternoon" | "greetingEvening" {
   const hour = new Date().getHours();
@@ -144,14 +144,14 @@ export default function DashboardPage() {
                 <div
                   className="w-10 h-10 rounded-full flex items-center justify-center text-lg shrink-0"
                   style={{
-                    backgroundColor: `${getUserMeta(latestMessage.userId).color}33`,
+                    backgroundColor: `${getUserMetaOrFallback(latestMessage.userId).color}33`,
                   }}
                 >
-                  {getUserMeta(latestMessage.userId).emoji}
+                  {getUserMetaOrFallback(latestMessage.userId).emoji}
                 </div>
                 <div className="min-w-0">
                   <p className="text-sm font-semibold text-ink truncate">
-                    {getUserMeta(latestMessage.userId).name}
+                    {getUserMetaOrFallback(latestMessage.userId).name}
                   </p>
                   <p dir="auto" className="text-xs text-ink-muted truncate">
                     {latestMessage.text}

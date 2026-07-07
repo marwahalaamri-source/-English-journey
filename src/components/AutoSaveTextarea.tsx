@@ -13,12 +13,15 @@ interface AutoSaveTextareaProps {
 const DEBOUNCE_MS = 500;
 
 export default function AutoSaveTextarea({
-  value,
+  value: rawValue,
   onCommit,
   placeholder,
   rows = 3,
   className = "",
 }: AutoSaveTextareaProps) {
+  // Defensive: tolerate a non-string value (e.g. null from a malformed
+  // Supabase row) instead of handing React an invalid controlled-input value.
+  const value = rawValue ?? "";
   const [local, setLocal] = useState(value);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 

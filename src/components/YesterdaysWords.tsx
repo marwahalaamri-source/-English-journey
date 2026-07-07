@@ -7,8 +7,15 @@ interface YesterdaysWordsProps {
   example: string;
 }
 
-export default function YesterdaysWords({ words, example }: YesterdaysWordsProps) {
+export default function YesterdaysWords({
+  words: rawWords,
+  example: rawExample,
+}: YesterdaysWordsProps) {
   const { t } = useApp();
+  // Defensive: tolerate a non-string (e.g. null from a malformed Supabase
+  // row) instead of crashing the whole page on .trim().
+  const words = rawWords ?? "";
+  const example = rawExample ?? "";
   const hasContent = words.trim().length > 0 || example.trim().length > 0;
 
   return (

@@ -25,16 +25,20 @@ interface TeamMessageRow {
   fire_count: number;
 }
 
+// Defensive: a row could have been inserted by hand (e.g. via the Supabase
+// Table Editor while testing) with missing/null fields the schema's NOT
+// NULL defaults wouldn't apply to an explicit null. Never let a malformed
+// row crash rendering — coalesce to safe values instead.
 function rowToMessage(row: TeamMessageRow): TeamMessage {
   return {
-    id: row.id,
-    userId: row.user_id,
-    text: row.text,
-    createdAt: row.created_at,
+    id: row.id ?? "",
+    userId: row.user_id ?? "",
+    text: row.text ?? "",
+    createdAt: row.created_at ?? new Date().toISOString(),
     reactions: {
-      heart: row.heart_count,
-      clap: row.clap_count,
-      fire: row.fire_count,
+      heart: row.heart_count ?? 0,
+      clap: row.clap_count ?? 0,
+      fire: row.fire_count ?? 0,
     },
   };
 }

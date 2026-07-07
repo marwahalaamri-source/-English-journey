@@ -20,11 +20,16 @@ interface DayEntryRow {
   updated_at: string;
 }
 
+// Defensive: a row could exist with null columns (e.g. hand-inserted via
+// the Supabase Table Editor while testing, or a table that already existed
+// under this name before the NOT NULL constraints were applied — `create
+// table if not exists` silently no-ops against it). Never pass a non-string
+// through to callers that call .trim() on these values.
 function rowToFields(row: DayEntryRow): DayEntryFields {
   return {
-    vocabWords: row.vocab_words,
-    vocabExample: row.vocab_example,
-    notes: row.notes,
+    vocabWords: row.vocab_words ?? "",
+    vocabExample: row.vocab_example ?? "",
+    notes: row.notes ?? "",
   };
 }
 

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useApp } from "@/context/AppContext";
 import SyncStatusNotice from "./SyncStatusNotice";
-import { getUserMeta } from "@/lib/users";
+import { getUserMetaOrFallback } from "@/lib/users";
 import {
   addMessage,
   loadMessages,
@@ -86,7 +86,7 @@ export default function TeamWallSection() {
       ) : (
         <div className="flex flex-col gap-3">
           {messages.map((message) => {
-            const meta = getUserMeta(message.userId);
+            const meta = getUserMetaOrFallback(message.userId);
             const date = new Date(message.createdAt).toLocaleString(
               language === "ar" ? "ar-EG" : "en-US",
               { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" },
