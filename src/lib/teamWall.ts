@@ -1,72 +1,123 @@
+import { getSupabaseClient, isSupabaseConfigured } from "./supabaseClient";
+import * as local from "./teamWallLocal";
 import type { UserId } from "./types";
+import type { ReactionCounts, TeamMessage } from "./teamWallTypes";
 
-export interface ReactionCounts {
-  heart: number;
-  clap: number;
-  fire: number;
-}
+export type { ReactionCounts, TeamMessage } from "./teamWallTypes";
 
-export interface TeamMessage {
+const TABLE = "team_messages";
+
+const REACTION_COLUMNS: Record<keyof ReactionCounts, string> = {
+  heart: "heart_count",
+  clap: "clap_count",
+  fire: "fire_count",
+};
+
+interface TeamMessageRow {
   id: string;
-  userId: UserId;
+  user_id: UserId;
   text: string;
-  createdAt: string; // ISO timestamp
-  reactions: ReactionCounts;
+  created_at: string;
+  heart_count: number;
+  clap_count: number;
+  fire_count: number;
 }
 
-const KEY = "ej_team_wall";
-
-function isBrowser() {
-  return typeof window !== "undefined";
+function rowToMessage(row: TeamMessageRow): TeamMessage {
+  return {
+    id: row.id,
+    userId: row.user_id,
+    text: row.text,
+    createdAt: row.created_at,
+    reactions: {
+      heart: row.heart_count,
+      clap: row.clap_count,
+      fire: row.fire_count,
+    },
+  };
 }
 
-export function loadMessages(): TeamMessage[] {
-  if (!isBrowser()) return [];
-  try {
-    const raw = window.localStorage.getItem(KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw) as TeamMessage[];
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
+export async function loadMessages(): Promise<TeamMessage[]> {
+  if (!isSupabaseConfigured()) return local.loadMessages();
+  const supabase = getSupabaseClient()!;
+  const { data, error } = await supabase
+    .from(TABLE)
+    .select("*")
+    .order("created_at", { ascending: false });
+  if (error) {
+    console.error("Failed to load team messages from Supabase:", error.message);
     return [];
   }
+  return (data as TeamMessageRow[]).map(rowToMessage);
 }
 
-function saveMessages(messages: TeamMessage[]) {
-  if (!isBrowser()) return;
-  try {
-    window.localStorage.setItem(KEY, JSON.stringify(messages));
-  } catch {
-    // storage unavailable — fail silently
+export async function addMessage(
+  userId: UserId,
+  text: string,
+): Promise<TeamMessage[]> {
+  if (!isSupabaseConfigured()) return local.addMessage(userId, text);
+  const supabase = getSupabaseClient()!;
+  const { error } = await supabase
+    .from(TABLE)
+    .insert({ user_id: userId, text });
+  if (error) {
+    console.error("Failed to post team message to Supabase:", error.message);
   }
+  return loadMessages();
 }
 
-export function addMessage(userId: UserId, text: string): TeamMessage[] {
-  const message: TeamMessage = {
-    id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-    userId,
-    text,
-    createdAt: new Date().toISOString(),
-    reactions: { heart: 0, clap: 0, fire: 0 },
-  };
-  const next = [message, ...loadMessages()];
-  saveMessages(next);
-  return next;
-}
-
-export function reactToMessage(
+export async function reactToMessage(
   id: string,
   reaction: keyof ReactionCounts,
-): TeamMessage[] {
-  const next = loadMessages().map((m) =>
-    m.id === id
-      ? { ...m, reactions: { ...m.reactions, [reaction]: m.reactions[reaction] + 1 } }
-      : m,
-  );
-  saveMessages(next);
-  return next;
+): Promise<TeamMessage[]> {
+  if (!isSupabaseConfigured()) return local.reactToMessage(id, reaction);
+  const supabase = getSupabaseClient()!;
+  const column = REACTION_COLUMNS[reaction];
+
+  const { data: current, error: readError } = await supabase
+    .from(TABLE)
+    .select(column)
+    .eq("id", id)
+    .single();
+
+  if (!readError && current) {
+    const currentCount = (current as unknown as Record<string, number>)[column] ?? 0;
+    const { error: updateError } = await supabase
+      .from(TABLE)
+      .update({ [column]: currentCount + 1 })
+      .eq("id", id);
+    if (updateError) {
+      console.error("Failed to react to team message:", updateError.message);
+    }
+  }
+
+  return loadMessages();
 }
 
-export function getLatestMessage(): TeamMessage | null {
-  return loadMessages()[0] ?? null;
+export async function getLatestMessage(): Promise<TeamMessage | null> {
+  const messages = await loadMessages();
+  return messages[0] ?? null;
+}
+
+/**
+ * Subscribes to live inserts/updates on the team wall so messages posted
+ * from other devices show up without a manual refresh. Returns an
+ * unsubscribe function. No-ops (and never fires) when Supabase isn't
+ * configured, since localStorage has no cross-device events to listen for.
+ */
+export function subscribeToMessages(onChange: () => void): () => void {
+  if (!isSupabaseConfigured()) return () => {};
+  const supabase = getSupabaseClient()!;
+  const channel = supabase
+    .channel("team_messages_changes")
+    .on(
+      "postgres_changes",
+      { event: "*", schema: "public", table: TABLE },
+      () => onChange(),
+    )
+    .subscribe();
+
+  return () => {
+    supabase.removeChannel(channel);
+  };
 }

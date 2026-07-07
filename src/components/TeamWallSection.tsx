@@ -7,6 +7,7 @@ import {
   addMessage,
   loadMessages,
   reactToMessage,
+  subscribeToMessages,
   type TeamMessage,
 } from "@/lib/teamWall";
 
@@ -20,22 +21,38 @@ export default function TeamWallSection() {
   const { currentUserId, language, t } = useApp();
   const [messages, setMessages] = useState<TeamMessage[] | null>(null);
   const [draft, setDraft] = useState("");
+  const [posting, setPosting] = useState(false);
 
-  // Read localStorage on mount only; server has no access to it.
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setMessages(loadMessages());
+    let cancelled = false;
+
+    async function refresh() {
+      const next = await loadMessages();
+      if (!cancelled) setMessages(next);
+    }
+
+    refresh();
+    const unsubscribe = subscribeToMessages(refresh);
+
+    return () => {
+      cancelled = true;
+      unsubscribe();
+    };
   }, []);
 
-  function handlePost() {
+  async function handlePost() {
     const text = draft.trim();
-    if (!text || !currentUserId) return;
-    setMessages(addMessage(currentUserId, text));
+    if (!text || !currentUserId || posting) return;
+    setPosting(true);
     setDraft("");
+    const next = await addMessage(currentUserId, text);
+    setMessages(next);
+    setPosting(false);
   }
 
-  function handleReact(id: string, key: keyof TeamMessage["reactions"]) {
-    setMessages(reactToMessage(id, key));
+  async function handleReact(id: string, key: keyof TeamMessage["reactions"]) {
+    const next = await reactToMessage(id, key);
+    setMessages(next);
   }
 
   if (messages === null) return null;
@@ -53,7 +70,7 @@ export default function TeamWallSection() {
         />
         <button
           onClick={handlePost}
-          disabled={!draft.trim()}
+          disabled={!draft.trim() || posting}
           className="tap-scale w-full rounded-xl bg-accent-strong text-white text-sm font-semibold py-2.5 disabled:opacity-40"
         >
           {t((d) => d.teamWall.post)}

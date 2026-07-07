@@ -10,7 +10,7 @@ export interface UserMeta {
 export const USERS: UserMeta[] = [
   { id: "marwah", name: "Marwah", color: "#7FC7EA", emoji: "🌸" },
   { id: "ebtehal", name: "Ebtehal", color: "#F2C79C", emoji: "🌼" },
-  { id: "meead", name: "Meead", color: "#A7D8C5", emoji: "🌿" },
+  { id: "meead", name: "Miad", color: "#A7D8C5", emoji: "🌿" },
   { id: "fatimah", name: "Fatimah", color: "#E3B6C9", emoji: "🌷" },
 ];
 

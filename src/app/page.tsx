@@ -10,7 +10,7 @@ import { ACHIEVEMENTS } from "@/lib/achievements";
 import { getMonthKey } from "@/lib/months";
 import { REQUIRED_TASK_COUNT } from "@/lib/tasks";
 import { requiredCompletedCount } from "@/lib/selectors";
-import { getLatestMessage, type TeamMessage } from "@/lib/teamWall";
+import { getLatestMessage, subscribeToMessages, type TeamMessage } from "@/lib/teamWall";
 import { getUserMeta } from "@/lib/users";
 
 function greetingKey(): "greetingMorning" | "greetingAfternoon" | "greetingEvening" {
@@ -33,10 +33,21 @@ export default function DashboardPage() {
     undefined,
   );
 
-  // Read localStorage on mount only; server has no access to it.
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setLatestMessage(getLatestMessage());
+    let cancelled = false;
+
+    async function refresh() {
+      const message = await getLatestMessage();
+      if (!cancelled) setLatestMessage(message);
+    }
+
+    refresh();
+    const unsubscribe = subscribeToMessages(refresh);
+
+    return () => {
+      cancelled = true;
+      unsubscribe();
+    };
   }, []);
 
   if (!progress || !stats) return null;
