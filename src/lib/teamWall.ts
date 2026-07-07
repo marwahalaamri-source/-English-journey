@@ -109,7 +109,7 @@ export function subscribeToMessages(onChange: () => void): () => void {
   if (!isSupabaseConfigured()) return () => {};
   const supabase = getSupabaseClient()!;
   const channel = supabase
-    .channel("team_messages_changes")
+    .channel(`team_messages_changes_${Math.random().toString(36).slice(2)}`)
     .on(
       "postgres_changes",
       { event: "*", schema: "public", table: TABLE },

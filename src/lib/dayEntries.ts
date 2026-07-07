@@ -85,7 +85,7 @@ export function subscribeToDayEntry(
   if (!isSupabaseConfigured()) return () => {};
   const supabase = getSupabaseClient()!;
   const channel = supabase
-    .channel(`day_entry_${userId}_${day}`)
+    .channel(`day_entry_${userId}_${day}_${Math.random().toString(36).slice(2)}`)
     .on(
       "postgres_changes",
       {
