@@ -5,6 +5,7 @@ import PageHeader from "@/components/PageHeader";
 import TaskCard from "@/components/TaskCard";
 import { OPTIONAL_TASKS, REQUIRED_TASK_COUNT, REQUIRED_TASKS } from "@/lib/tasks";
 import { requiredCompletedCount } from "@/lib/selectors";
+import { getMonthKey } from "@/lib/months";
 
 export default function TasksPage() {
   const { stats, t } = useApp();
@@ -13,12 +14,18 @@ export default function TasksPage() {
 
   const doneCount = requiredCompletedCount(stats.todayRecord);
   const allDone = doneCount >= REQUIRED_TASK_COUNT;
+  const monthKey = getMonthKey(stats.day);
+  const monthTitle = t((d) => d.months[monthKey].title);
 
   return (
     <div className="pb-4">
       <PageHeader
         title={t((d) => d.tasks.title)}
-        subtitle={t((d) => d.tasks.subtitle)}
+        subtitle={t((d) => d.dashboard.journeyLine, {
+          dayInMonth: stats.dayInMonth,
+          month: stats.monthIndex,
+          title: monthTitle,
+        })}
       />
 
       <div className="card-shadow rounded-2xl bg-surface border border-border p-4 mb-5">

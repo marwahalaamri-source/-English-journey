@@ -17,7 +17,10 @@ export interface TaskDefinition {
   xp: number;
   optional?: boolean;
   icon: string;
+  resourceUrl?: string;
 }
+
+export type MonthKey = "foundation" | "confidence" | "fluency";
 
 export interface DayRecord {
   date: string; // YYYY-MM-DD

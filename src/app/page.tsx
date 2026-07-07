@@ -9,11 +9,16 @@ import TaskCard from "@/components/TaskCard";
 import { TASKS } from "@/lib/tasks";
 import { ACHIEVEMENTS } from "@/lib/achievements";
 import { Icon, type IconName } from "@/components/Icon";
+import { getMonthKey } from "@/lib/months";
 
 export default function DashboardPage() {
   const { progress, stats, t } = useApp();
 
   if (!progress || !stats) return null;
+
+  const monthKey = getMonthKey(stats.day);
+  const monthTitle = t((d) => d.months[monthKey].title);
+  const monthTagline = t((d) => d.months[monthKey].tagline);
 
   const unlockedIds = Object.entries(progress.unlockedAchievements).sort(
     (a, b) => (a[1] < b[1] ? 1 : -1),
@@ -30,6 +35,34 @@ export default function DashboardPage() {
         </h1>
         <p className="text-sm text-ink-muted mt-1">
           {t((d) => d.dashboard.subtitle)}
+        </p>
+        <p className="text-xs font-medium text-accent-strong mt-2">
+          {t((d) => d.dashboard.journeyLine, {
+            dayInMonth: stats.dayInMonth,
+            month: stats.monthIndex,
+            title: monthTitle,
+          })}
+        </p>
+      </div>
+
+      <div className="card-shadow rounded-2xl bg-surface border border-border p-4 mb-5">
+        <div className="flex items-center justify-between mb-2">
+          <div>
+            <p className="text-sm font-semibold text-ink">{monthTitle}</p>
+            <p className="text-xs text-ink-muted">{monthTagline}</p>
+          </div>
+          <span className="text-sm font-bold text-accent-strong">
+            {stats.overallCompletionPercent}%
+          </span>
+        </div>
+        <div className="h-2 rounded-full bg-cream-soft overflow-hidden">
+          <div
+            className="h-full rounded-full bg-accent-strong transition-all duration-500"
+            style={{ width: `${stats.overallCompletionPercent}%` }}
+          />
+        </div>
+        <p className="text-[11px] text-ink-muted mt-1.5">
+          {t((d) => d.common.journeyProgress)}
         </p>
       </div>
 

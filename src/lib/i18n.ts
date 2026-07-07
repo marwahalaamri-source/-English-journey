@@ -1,4 +1,4 @@
-import type { Language } from "./types";
+import type { Language, MonthKey } from "./types";
 
 export interface Dictionary {
   common: {
@@ -17,7 +17,14 @@ export interface Dictionary {
     locked: string;
     unlocked: string;
     min: string;
+    of: string;
+    month: string;
+    openResource: string;
+    markDone: string;
+    undo: string;
+    journeyProgress: string;
   };
+  months: Record<MonthKey, { title: string; tagline: string }>;
   nav: {
     dashboard: string;
     tasks: string;
@@ -39,6 +46,7 @@ export interface Dictionary {
     greeting: string;
     subtitle: string;
     dayBadge: string;
+    journeyLine: string;
     statXp: string;
     statStreak: string;
     statMinutes: string;
@@ -147,6 +155,26 @@ export const dictionaries: Record<Language, Dictionary> = {
       locked: "Locked",
       unlocked: "Unlocked",
       min: "min",
+      of: "of",
+      month: "Month",
+      openResource: "Open resource",
+      markDone: "Mark done",
+      undo: "Undo",
+      journeyProgress: "Journey Progress",
+    },
+    months: {
+      foundation: {
+        title: "Foundation",
+        tagline: "Build a solid base",
+      },
+      confidence: {
+        title: "Confidence",
+        tagline: "Speak with certainty",
+      },
+      fluency: {
+        title: "Fluency",
+        tagline: "Think in English",
+      },
     },
     nav: {
       dashboard: "Dashboard",
@@ -169,9 +197,10 @@ export const dictionaries: Record<Language, Dictionary> = {
       greeting: "Welcome back, {{name}}",
       subtitle: "Let's make today count.",
       dayBadge: "Day {{day}}",
+      journeyLine: "Day {{dayInMonth}} of 30 · Month {{month}} · {{title}}",
       statXp: "Total XP",
       statStreak: "Day Streak",
-      statMinutes: "Minutes Learned",
+      statMinutes: "Study Time",
       statProgress: "Today's Progress",
       todayTasks: "Today's Tasks",
       viewAll: "View all",
@@ -189,39 +218,41 @@ export const dictionaries: Record<Language, Dictionary> = {
       task: {
         listening: {
           title: "Listening",
-          description: "Listen to native English audio or podcasts",
+          description:
+            "Immerse yourself in native English through curated listening practice.",
         },
         vocabulary: {
           title: "Vocabulary",
-          description: "Learn new words and phrases",
+          description: "Learn today's set from the English Journey vocabulary booklet.",
         },
         vocabularyReview: {
           title: "Vocabulary Review",
-          description: "Review previously learned vocabulary",
+          description: "Review previously learned words from the vocabulary booklet.",
         },
         grammar: {
           title: "Grammar",
-          description: "Study a new grammar concept",
+          description: "Study one rule from the English Journey grammar booklet.",
         },
         grammarReview: {
           title: "Grammar Review",
-          description: "Revisit earlier grammar lessons",
+          description: "Revisit an earlier rule from the grammar booklet.",
         },
         reading: {
           title: "Reading",
-          description: "Read an English article or story",
+          description: "Read a short passage from the reading library.",
         },
         speaking: {
           title: "Speaking",
-          description: "Practice speaking out loud",
+          description: "Practice speaking out loud with today's guide.",
         },
         aiFeedback: {
           title: "AI Feedback",
-          description: "Get feedback on your speaking or writing",
+          description:
+            "Open ChatGPT for a 5-minute voice conversation based on today's lesson.",
         },
         shadowing: {
           title: "Shadowing",
-          description: "Repeat along with native speaker audio",
+          description: "Repeat after native speakers from today's listening lesson.",
         },
       },
     },
@@ -337,6 +368,26 @@ export const dictionaries: Record<Language, Dictionary> = {
       locked: "مقفل",
       unlocked: "مفتوح",
       min: "د",
+      of: "من",
+      month: "الشهر",
+      openResource: "فتح المصدر",
+      markDone: "تحديد كمكتمل",
+      undo: "تراجع",
+      journeyProgress: "تقدم الرحلة",
+    },
+    months: {
+      foundation: {
+        title: "الأساس",
+        tagline: "ابنِ أساسًا متينًا",
+      },
+      confidence: {
+        title: "الثقة",
+        tagline: "تحدث بثقة",
+      },
+      fluency: {
+        title: "الطلاقة",
+        tagline: "فكّر بالإنجليزية",
+      },
     },
     nav: {
       dashboard: "الرئيسية",
@@ -359,9 +410,10 @@ export const dictionaries: Record<Language, Dictionary> = {
       greeting: "أهلاً بعودتك، {{name}}",
       subtitle: "لنجعل اليوم مميزًا.",
       dayBadge: "اليوم {{day}}",
+      journeyLine: "اليوم {{dayInMonth}} من 30 · الشهر {{month}} · {{title}}",
       statXp: "إجمالي نقاط الخبرة",
       statStreak: "أيام التتابع",
-      statMinutes: "دقائق التعلم",
+      statMinutes: "وقت الدراسة",
       statProgress: "تقدم اليوم",
       todayTasks: "مهام اليوم",
       viewAll: "عرض الكل",
@@ -379,39 +431,39 @@ export const dictionaries: Record<Language, Dictionary> = {
       task: {
         listening: {
           title: "الاستماع",
-          description: "استمع إلى صوتيات أو بودكاست باللغة الإنجليزية",
+          description: "انغمس في اللغة الإنجليزية الأصلية عبر تمارين استماع مختارة.",
         },
         vocabulary: {
           title: "المفردات",
-          description: "تعلّم كلمات وعبارات جديدة",
+          description: "تعلّم مجموعة اليوم من كتيب مفردات English Journey.",
         },
         vocabularyReview: {
           title: "مراجعة المفردات",
-          description: "راجع المفردات التي تعلمتها سابقًا",
+          description: "راجع الكلمات التي تعلمتها سابقًا من كتيب المفردات.",
         },
         grammar: {
           title: "القواعد",
-          description: "ادرس قاعدة نحوية جديدة",
+          description: "ادرس قاعدة واحدة من كتيب قواعد English Journey.",
         },
         grammarReview: {
           title: "مراجعة القواعد",
-          description: "راجع دروس القواعد السابقة",
+          description: "راجع قاعدة سابقة من كتيب القواعد.",
         },
         reading: {
           title: "القراءة",
-          description: "اقرأ مقالًا أو قصة باللغة الإنجليزية",
+          description: "اقرأ نصًا قصيرًا من مكتبة القراءة.",
         },
         speaking: {
           title: "المحادثة",
-          description: "تدرب على التحدث بصوت عالٍ",
+          description: "تدرب على التحدث بصوت عالٍ باستخدام دليل اليوم.",
         },
         aiFeedback: {
           title: "تقييم الذكاء الاصطناعي",
-          description: "احصل على تقييم لمحادثتك أو كتابتك",
+          description: "افتح ChatGPT لمحادثة صوتية مدتها 5 دقائق حول درس اليوم.",
         },
         shadowing: {
           title: "المحاكاة الصوتية",
-          description: "كرر مع صوت متحدث أصلي",
+          description: "كرر مع المتحدثين الأصليين من درس الاستماع اليوم.",
         },
       },
     },

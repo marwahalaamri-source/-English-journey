@@ -1,5 +1,6 @@
 import { REQUIRED_TASKS, REQUIRED_TASK_COUNT, TASK_MAP } from "./tasks";
 import { addDays, dayNumber as computeDayNumber } from "./date";
+import { TOTAL_JOURNEY_DAYS, getDayInMonth, getMonthIndex } from "./months";
 import type { DayRecord, TaskId, UserProgress } from "./types";
 
 export function emptyDayRecord(date: string): DayRecord {
@@ -86,6 +87,9 @@ export interface DerivedStats {
   longestStreak: number;
   taskCounts: Partial<Record<TaskId, number>>;
   day: number;
+  monthIndex: 1 | 2 | 3;
+  dayInMonth: number;
+  overallCompletionPercent: number;
   today: string;
   todayRecord: DayRecord;
   todayProgressPercent: number;
@@ -99,6 +103,15 @@ export function deriveStats(
   const { xp, minutes, taskCounts } = computeTotals(progress.history);
   const { streak, longestStreak } = computeStreakStats(progress.history, today);
   const todayRecord = getDayRecord(progress.history, today);
+  const day = computeDayNumber(progress.startDate, today);
+
+  const totalRequiredDone = Object.values(progress.history).reduce(
+    (sum, record) => sum + requiredCompletedCount(record),
+    0,
+  );
+  const overallCompletionPercent = Math.round(
+    (totalRequiredDone / (TOTAL_JOURNEY_DAYS * REQUIRED_TASK_COUNT)) * 100,
+  );
 
   return {
     xp,
@@ -106,7 +119,10 @@ export function deriveStats(
     streak,
     longestStreak,
     taskCounts,
-    day: computeDayNumber(progress.startDate, today),
+    day,
+    monthIndex: getMonthIndex(day),
+    dayInMonth: getDayInMonth(day),
+    overallCompletionPercent,
     today,
     todayRecord,
     todayProgressPercent: todayProgressPercent(todayRecord),
