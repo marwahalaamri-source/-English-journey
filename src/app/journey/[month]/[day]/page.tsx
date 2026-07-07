@@ -19,7 +19,7 @@ export default function DayDetailPage() {
   const params = useParams<{ month: string; day: string }>();
   const monthIndex = Number(params.month);
   const globalDay = Number(params.day);
-  const { progress, toggleTask, updateDayJournal, t } = useApp();
+  const { progress, toggleTask, updateDayJournal, applyRemoteDayJournal, t } = useApp();
   const userId = progress?.userId ?? null;
 
   // Guards the one-time initial fetch below from clobbering text the user
@@ -38,20 +38,20 @@ export default function DayDetailPage() {
         fetchDayEntry(userId!, globalDay - 1),
       ]);
       if (cancelled) return;
-      if (current && !hasEditedRef.current) updateDayJournal(globalDay, current);
-      if (previous) updateDayJournal(globalDay - 1, previous);
+      if (current && !hasEditedRef.current) applyRemoteDayJournal(globalDay, current);
+      if (previous) applyRemoteDayJournal(globalDay - 1, previous);
     }
     syncFromRemote();
 
     const unsubscribe = subscribeToDayEntry(userId, globalDay, (fields) => {
-      if (!cancelled) updateDayJournal(globalDay, fields);
+      if (!cancelled) applyRemoteDayJournal(globalDay, fields);
     });
 
     return () => {
       cancelled = true;
       unsubscribe();
     };
-  }, [userId, globalDay, updateDayJournal]);
+  }, [userId, globalDay, applyRemoteDayJournal]);
 
   if (
     !isValidMonthIndex(monthIndex) ||

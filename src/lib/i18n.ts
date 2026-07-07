@@ -94,6 +94,8 @@ export interface Dictionary {
     noYesterdayWords: string;
     todaysNotes: string;
     notesPlaceholder: string;
+    saving: string;
+    saved: string;
   };
   teamWall: {
     title: string;
@@ -292,6 +294,8 @@ export const dictionaries: Record<Language, Dictionary> = {
       noYesterdayWords: "No words saved yet.",
       todaysNotes: "Today's Notes",
       notesPlaceholder: "Write anything about today's lesson...",
+      saving: "Saving…",
+      saved: "Saved",
     },
     teamWall: {
       title: "Team Wall",
@@ -522,6 +526,8 @@ export const dictionaries: Record<Language, Dictionary> = {
       noYesterdayWords: "لا توجد كلمات محفوظة بعد.",
       todaysNotes: "ملاحظات اليوم",
       notesPlaceholder: "اكتب أي شيء عن درس اليوم...",
+      saving: "جارٍ الحفظ…",
+      saved: "تم الحفظ",
     },
     teamWall: {
       title: "حائط الفريق",

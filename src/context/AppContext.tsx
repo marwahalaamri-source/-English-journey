@@ -58,6 +58,10 @@ interface AppContextValue {
     day: number,
     patch: Partial<Pick<DayRecord, "vocabWords" | "vocabExample" | "notes">>,
   ) => void;
+  applyRemoteDayJournal: (
+    day: number,
+    patch: Partial<Pick<DayRecord, "vocabWords" | "vocabExample" | "notes">>,
+  ) => void;
   updateDisplayName: (name: string) => void;
   resetMyProgress: () => void;
   t: (selector: (d: Dictionary) => string, vars?: Record<string, string | number>) => string;
@@ -181,6 +185,27 @@ export function AppProvider({ children }: { children: ReactNode }) {
     [],
   );
 
+  // Applies a journal patch that originated from Supabase (initial fetch or
+  // a realtime row change) to local state/localStorage only. Never calls
+  // upsertDayEntry: doing so would write the just-received row straight back
+  // to Supabase, which re-triggers the same realtime event and loops forever
+  // (each upsert bumps `updated_at`, so it's never a no-op to Postgres).
+  const applyRemoteDayJournal = useCallback(
+    (
+      day: number,
+      patch: Partial<Pick<DayRecord, "vocabWords" | "vocabExample" | "notes">>,
+    ) => {
+      setProgress((prev) => {
+        if (!prev) return prev;
+        const history = updateDayJournalInHistory(prev.history, day, patch);
+        const next: UserProgress = { ...prev, history };
+        saveProgress(next);
+        return next;
+      });
+    },
+    [],
+  );
+
   const updateDisplayName = useCallback((name: string) => {
     setProgress((prev) => {
       if (!prev) return prev;
@@ -226,6 +251,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     switchToPicker,
     toggleTask,
     updateDayJournal,
+    applyRemoteDayJournal,
     updateDisplayName,
     resetMyProgress,
     t,
