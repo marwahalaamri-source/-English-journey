@@ -67,12 +67,6 @@ function createInitialProgress(id: UserId, name: string): UserProgress {
     userId: id,
     displayName: name,
     startDate: todayStr(),
-    xp: 0,
-    streak: 0,
-    longestStreak: 0,
-    totalMinutes: 0,
-    lastCompletedDate: null,
-    taskCounts: {},
     history: {},
     unlockedAchievements: {},
   };

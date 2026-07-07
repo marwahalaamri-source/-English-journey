@@ -5,12 +5,15 @@ Marwah, Ebtehal, Meead, and Fatimah.
 
 ## Features
 
-- **Dashboard** – daily XP, streak, minutes, and progress at a glance
-- **Daily Tasks** – Listening, Vocabulary, Vocabulary Review, Grammar, Grammar
-  Review, Reading, Speaking, AI Feedback, and optional Shadowing
-- **Calendar** – a monthly view of completed/partial/missed days
+- **Home** – daily XP, streak, study time, and today's progress at a glance
+- **Journey** – a self-paced 90-day curriculum split into three 30-day months
+  (Foundation, Confidence, Fluency). Any day can be opened and completed in
+  any order — nothing is locked.
+- **Daily Tasks** (per day) – Listening, Vocabulary, Vocabulary Review,
+  Grammar, Grammar Review, Reading, Speaking, AI Feedback, and optional
+  Shadowing, each linking directly to its real resource
 - **Team Progress** – see how all four learners are doing
-- **Achievements** – unlockable badges for streaks, XP milestones, and more
+- **Awards** – unlockable badges for streaks, XP milestones, and more
 - **Profile** – edit your display name, switch users, reset your progress
 - **English / Arabic** language switch with full RTL support
 - **Light / Dark** mode

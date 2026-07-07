@@ -1,17 +1,22 @@
 import { REQUIRED_TASKS, REQUIRED_TASK_COUNT, TASK_MAP } from "./tasks";
-import { addDays, dayNumber as computeDayNumber } from "./date";
-import { TOTAL_JOURNEY_DAYS, getDayInMonth, getMonthIndex } from "./months";
+import { addDays } from "./date";
+import {
+  DAYS_PER_MONTH,
+  TOTAL_JOURNEY_DAYS,
+  getDayInMonth,
+  getMonthIndex,
+} from "./months";
 import type { DayRecord, TaskId, UserProgress } from "./types";
 
-export function emptyDayRecord(date: string): DayRecord {
-  return { date, completedTaskIds: [], minutes: 0, xpEarned: 0 };
+export function emptyDayRecord(): DayRecord {
+  return { completedTaskIds: [], minutes: 0, xpEarned: 0, datesTouched: [] };
 }
 
 export function getDayRecord(
-  history: Record<string, DayRecord>,
-  date: string,
+  history: Record<number, DayRecord>,
+  day: number,
 ): DayRecord {
-  return history[date] ?? emptyDayRecord(date);
+  return history[day] ?? emptyDayRecord();
 }
 
 export function isFullyCompleted(record: DayRecord | undefined): boolean {
@@ -25,29 +30,34 @@ export function requiredCompletedCount(record: DayRecord | undefined): number {
     .length;
 }
 
-export function todayProgressPercent(record: DayRecord | undefined): number {
+export function dayProgressPercent(record: DayRecord | undefined): number {
   return Math.round((requiredCompletedCount(record) / REQUIRED_TASK_COUNT) * 100);
 }
 
+/** The first day (1-90) that isn't fully completed yet — where the
+ * learner should resume. Clamped to the last day once everything is done. */
+export function findCurrentDay(history: Record<number, DayRecord>): number {
+  for (let day = 1; day <= TOTAL_JOURNEY_DAYS; day++) {
+    if (!isFullyCompleted(history[day])) return day;
+  }
+  return TOTAL_JOURNEY_DAYS;
+}
+
 export function computeStreakStats(
-  history: Record<string, DayRecord>,
+  activityDates: Set<string>,
   today: string,
 ): { streak: number; longestStreak: number } {
-  const completedDates = new Set(
-    Object.keys(history).filter((d) => isFullyCompleted(history[d])),
-  );
-
   let cursor = today;
-  if (!completedDates.has(cursor)) {
+  if (!activityDates.has(cursor)) {
     cursor = addDays(cursor, -1);
   }
   let streak = 0;
-  while (completedDates.has(cursor)) {
+  while (activityDates.has(cursor)) {
     streak++;
     cursor = addDays(cursor, -1);
   }
 
-  const sorted = [...completedDates].sort();
+  const sorted = [...activityDates].sort();
   let longest = 0;
   let run = 0;
   let prev: string | null = null;
@@ -64,7 +74,17 @@ export function computeStreakStats(
   return { streak, longestStreak: Math.max(longest, streak) };
 }
 
-export function computeTotals(history: Record<string, DayRecord>) {
+export function computeActivityDates(
+  history: Record<number, DayRecord>,
+): Set<string> {
+  const dates = new Set<string>();
+  for (const record of Object.values(history)) {
+    for (const d of record.datesTouched) dates.add(d);
+  }
+  return dates;
+}
+
+export function computeTotals(history: Record<number, DayRecord>) {
   let xp = 0;
   let minutes = 0;
   const taskCounts: Partial<Record<TaskId, number>> = {};
@@ -80,6 +100,34 @@ export function computeTotals(history: Record<string, DayRecord>) {
   return { xp, minutes, taskCounts };
 }
 
+function completionPercentInRange(
+  history: Record<number, DayRecord>,
+  startDay: number,
+  endDay: number,
+): number {
+  let done = 0;
+  for (let day = startDay; day <= endDay; day++) {
+    done += requiredCompletedCount(history[day]);
+  }
+  const total = (endDay - startDay + 1) * REQUIRED_TASK_COUNT;
+  return Math.round((done / total) * 100);
+}
+
+export function monthCompletionPercent(
+  history: Record<number, DayRecord>,
+  monthIndex: 1 | 2 | 3,
+): number {
+  const start = (monthIndex - 1) * DAYS_PER_MONTH + 1;
+  const end = monthIndex * DAYS_PER_MONTH;
+  return completionPercentInRange(history, start, end);
+}
+
+export function overallCompletionPercent(
+  history: Record<number, DayRecord>,
+): number {
+  return completionPercentInRange(history, 1, TOTAL_JOURNEY_DAYS);
+}
+
 export interface DerivedStats {
   xp: number;
   totalMinutes: number;
@@ -90,28 +138,22 @@ export interface DerivedStats {
   monthIndex: 1 | 2 | 3;
   dayInMonth: number;
   overallCompletionPercent: number;
+  monthCompletionPercent: number;
   today: string;
-  todayRecord: DayRecord;
-  todayProgressPercent: number;
-  todayMinutes: number;
+  currentDayRecord: DayRecord;
+  currentDayProgressPercent: number;
 }
 
 export function deriveStats(
-  progress: Pick<UserProgress, "startDate" | "history">,
+  progress: Pick<UserProgress, "history">,
   today: string,
 ): DerivedStats {
   const { xp, minutes, taskCounts } = computeTotals(progress.history);
-  const { streak, longestStreak } = computeStreakStats(progress.history, today);
-  const todayRecord = getDayRecord(progress.history, today);
-  const day = computeDayNumber(progress.startDate, today);
-
-  const totalRequiredDone = Object.values(progress.history).reduce(
-    (sum, record) => sum + requiredCompletedCount(record),
-    0,
-  );
-  const overallCompletionPercent = Math.round(
-    (totalRequiredDone / (TOTAL_JOURNEY_DAYS * REQUIRED_TASK_COUNT)) * 100,
-  );
+  const activityDates = computeActivityDates(progress.history);
+  const { streak, longestStreak } = computeStreakStats(activityDates, today);
+  const day = findCurrentDay(progress.history);
+  const currentDayRecord = getDayRecord(progress.history, day);
+  const monthIndex = getMonthIndex(day);
 
   return {
     xp,
@@ -120,22 +162,23 @@ export function deriveStats(
     longestStreak,
     taskCounts,
     day,
-    monthIndex: getMonthIndex(day),
+    monthIndex,
     dayInMonth: getDayInMonth(day),
-    overallCompletionPercent,
+    overallCompletionPercent: overallCompletionPercent(progress.history),
+    monthCompletionPercent: monthCompletionPercent(progress.history, monthIndex),
     today,
-    todayRecord,
-    todayProgressPercent: todayProgressPercent(todayRecord),
-    todayMinutes: todayRecord.minutes,
+    currentDayRecord,
+    currentDayProgressPercent: dayProgressPercent(currentDayRecord),
   };
 }
 
 export function toggleTaskInHistory(
-  history: Record<string, DayRecord>,
-  date: string,
+  history: Record<number, DayRecord>,
+  day: number,
   taskId: TaskId,
-): Record<string, DayRecord> {
-  const existing = getDayRecord(history, date);
+  today: string,
+): Record<number, DayRecord> {
+  const existing = getDayRecord(history, day);
   const task = TASK_MAP[taskId];
   const isCompleted = existing.completedTaskIds.includes(taskId);
 
@@ -151,12 +194,17 @@ export function toggleTaskInHistory(
     ? existing.xpEarned - task.xp
     : existing.xpEarned + task.xp;
 
+  const datesTouched =
+    !isCompleted && !existing.datesTouched.includes(today)
+      ? [...existing.datesTouched, today]
+      : existing.datesTouched;
+
   const updated: DayRecord = {
-    date,
     completedTaskIds,
     minutes: Math.max(0, minutes),
     xpEarned: Math.max(0, xpEarned),
+    datesTouched,
   };
 
-  return { ...history, [date]: updated };
+  return { ...history, [day]: updated };
 }

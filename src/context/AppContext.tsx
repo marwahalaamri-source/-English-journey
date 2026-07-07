@@ -40,7 +40,7 @@ interface AppContextValue {
   stats: DerivedStats | null;
   selectUser: (id: UserId) => void;
   switchToPicker: () => void;
-  toggleTask: (taskId: TaskId) => void;
+  toggleTask: (day: number, taskId: TaskId) => void;
   updateDisplayName: (name: string) => void;
   resetMyProgress: () => void;
   t: (selector: (d: Dictionary) => string, vars?: Record<string, string | number>) => string;
@@ -123,12 +123,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const toggleTask = useCallback(
-    (taskId: TaskId) => {
+    (day: number, taskId: TaskId) => {
       setProgress((prev) => {
         if (!prev) return prev;
         const today = todayStr();
-        const history = toggleTaskInHistory(prev.history, today, taskId);
-        const stats = deriveStats({ startDate: prev.startDate, history }, today);
+        const history = toggleTaskInHistory(prev.history, day, taskId, today);
+        const stats = deriveStats({ history }, today);
         const unlockedIds = computeUnlockedIds(stats);
         const unlockedAchievements = { ...prev.unlockedAchievements };
         for (const id of unlockedIds) {

@@ -15,8 +15,10 @@ export default function UserPicker() {
         {language === "en" ? "العربية" : "English"}
       </button>
 
-      <div className="text-4xl mb-3">📘</div>
-      <h1 className="text-2xl font-bold text-ink mb-1 text-center">
+      <div className="w-14 h-14 rounded-full bg-accent-soft text-accent-strong flex items-center justify-center font-serif text-2xl mb-4">
+        E
+      </div>
+      <h1 className="font-serif italic text-3xl text-ink mb-1 text-center">
         {t((d) => d.app.name)}
       </h1>
       <p className="text-ink-muted text-sm mb-8 text-center">
@@ -36,7 +38,7 @@ export default function UserPicker() {
             >
               {user.emoji}
             </div>
-            <span className="font-semibold text-ink">{user.name}</span>
+            <span className="font-serif text-lg text-ink">{user.name}</span>
           </button>
         ))}
       </div>

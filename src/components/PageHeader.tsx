@@ -7,8 +7,8 @@ export default function PageHeader({
 }) {
   return (
     <div className="mb-5">
-      <h1 className="text-xl font-bold text-ink">{title}</h1>
-      {subtitle && <p className="text-sm text-ink-muted mt-0.5">{subtitle}</p>}
+      <h1 className="font-serif text-2xl text-ink">{title}</h1>
+      {subtitle && <p className="text-sm text-ink-muted mt-1">{subtitle}</p>}
     </div>
   );
 }

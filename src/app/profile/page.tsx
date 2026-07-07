@@ -40,7 +40,7 @@ export default function ProfilePage() {
         >
           {meta.emoji}
         </div>
-        <div className="font-bold text-lg text-ink">{progress.displayName}</div>
+        <div className="font-serif text-xl text-ink">{progress.displayName}</div>
         <p className="text-xs text-ink-muted mt-1">
           {t((d) => d.profile.memberSince, { date: memberSince })}
         </p>

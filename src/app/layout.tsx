@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono, Tajawal } from "next/font/google";
+import { Geist, Geist_Mono, Markazi_Text, Newsreader, Tajawal } from "next/font/google";
 import "./globals.css";
 import { AppProvider } from "@/context/AppContext";
 import AppShell from "@/components/AppShell";
@@ -18,6 +18,19 @@ const tajawal = Tajawal({
   variable: "--font-tajawal",
   subsets: ["arabic", "latin"],
   weight: ["400", "500", "700", "800"],
+});
+
+const newsreader = Newsreader({
+  variable: "--font-newsreader",
+  subsets: ["latin"],
+  style: ["normal", "italic"],
+  weight: ["400", "500", "600"],
+});
+
+const markazi = Markazi_Text({
+  variable: "--font-markazi",
+  subsets: ["arabic", "latin"],
+  weight: ["400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
@@ -40,7 +53,7 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${geistSans.variable} ${geistMono.variable} ${tajawal.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${tajawal.variable} ${newsreader.variable} ${markazi.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-cream text-ink">
         <AppProvider>

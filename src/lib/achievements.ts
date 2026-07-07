@@ -10,12 +10,12 @@ export const ACHIEVEMENTS: AchievementDefinition[] = [
   {
     id: "firstStep",
     icon: "Footprints",
-    isUnlocked: (s) => s.todayRecord.completedTaskIds.length > 0 || s.xp > 0,
+    isUnlocked: (s) => s.currentDayRecord.completedTaskIds.length > 0 || s.xp > 0,
   },
   {
     id: "perfectDay",
     icon: "CheckCircle2",
-    isUnlocked: (s) => s.todayProgressPercent >= 100,
+    isUnlocked: (s) => s.currentDayProgressPercent >= 100,
   },
   {
     id: "streak3",

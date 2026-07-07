@@ -1,15 +1,28 @@
 "use client";
 
 import Link from "next/link";
-import { Clock, Flame, TrendingUp, Zap } from "lucide-react";
+import { ArrowRight, Clock, Flame, Sparkles, Target } from "lucide-react";
 import { useApp } from "@/context/AppContext";
 import StatCard from "@/components/StatCard";
-import ProgressRing from "@/components/ProgressRing";
-import TaskCard from "@/components/TaskCard";
-import { TASKS } from "@/lib/tasks";
-import { ACHIEVEMENTS } from "@/lib/achievements";
 import { Icon, type IconName } from "@/components/Icon";
+import { ACHIEVEMENTS } from "@/lib/achievements";
 import { getMonthKey } from "@/lib/months";
+import { REQUIRED_TASK_COUNT } from "@/lib/tasks";
+import { requiredCompletedCount } from "@/lib/selectors";
+
+function greetingKey(): "greetingMorning" | "greetingAfternoon" | "greetingEvening" {
+  const hour = new Date().getHours();
+  if (hour < 12) return "greetingMorning";
+  if (hour < 18) return "greetingAfternoon";
+  return "greetingEvening";
+}
+
+function formatStudyTime(totalMinutes: number): string {
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  if (hours === 0) return `${minutes}m`;
+  return `${hours}h ${minutes}m`;
+}
 
 export default function DashboardPage() {
   const { progress, stats, t } = useApp();
@@ -18,7 +31,7 @@ export default function DashboardPage() {
 
   const monthKey = getMonthKey(stats.day);
   const monthTitle = t((d) => d.months[monthKey].title);
-  const monthTagline = t((d) => d.months[monthKey].tagline);
+  const doneCount = requiredCompletedCount(stats.currentDayRecord);
 
   const unlockedIds = Object.entries(progress.unlockedAchievements).sort(
     (a, b) => (a[1] < b[1] ? 1 : -1),
@@ -30,13 +43,11 @@ export default function DashboardPage() {
   return (
     <div className="pb-4">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-ink">
-          {t((d) => d.dashboard.greeting, { name: progress.displayName })}
+        <p className="text-ink-muted text-sm">{t((d) => d.dashboard[greetingKey()])}</p>
+        <h1 className="font-serif italic text-4xl text-ink leading-tight">
+          {progress.displayName}
         </h1>
-        <p className="text-sm text-ink-muted mt-1">
-          {t((d) => d.dashboard.subtitle)}
-        </p>
-        <p className="text-xs font-medium text-accent-strong mt-2">
+        <p className="text-sm text-ink-muted mt-2">
           {t((d) => d.dashboard.journeyLine, {
             dayInMonth: stats.dayInMonth,
             month: stats.monthIndex,
@@ -45,89 +56,58 @@ export default function DashboardPage() {
         </p>
       </div>
 
-      <div className="card-shadow rounded-2xl bg-surface border border-border p-4 mb-5">
-        <div className="flex items-center justify-between mb-2">
-          <div>
-            <p className="text-sm font-semibold text-ink">{monthTitle}</p>
-            <p className="text-xs text-ink-muted">{monthTagline}</p>
-          </div>
-          <span className="text-sm font-bold text-accent-strong">
-            {stats.overallCompletionPercent}%
+      <Link
+        href={`/journey/${stats.monthIndex}/${stats.day}`}
+        className="tap-scale block card-shadow rounded-2xl bg-surface border border-border p-5 mb-5"
+      >
+        <div className="flex items-start justify-between mb-3">
+          <span className="text-[11px] uppercase tracking-wide font-medium text-ink-muted">
+            {t((d) => d.dashboard.todaysProgress)}
+          </span>
+          <span className="tap-scale flex items-center gap-1 rounded-full bg-accent text-accent-contrast text-xs font-semibold px-3.5 py-1.5">
+            {t((d) => d.common.open)}
+            <ArrowRight size={13} className="rtl:rotate-180" />
           </span>
         </div>
+        <div className="flex items-baseline gap-1 font-serif text-ink">
+          <span className="text-5xl">{doneCount}</span>
+          <span className="text-xl text-ink-muted">/{REQUIRED_TASK_COUNT}</span>
+        </div>
+        <p className="text-sm text-ink-muted mt-1 mb-4">
+          {t((d) => d.dashboard.tasksCompletedLabel)}
+        </p>
         <div className="h-2 rounded-full bg-cream-soft overflow-hidden">
           <div
             className="h-full rounded-full bg-accent-strong transition-all duration-500"
-            style={{ width: `${stats.overallCompletionPercent}%` }}
+            style={{ width: `${stats.currentDayProgressPercent}%` }}
           />
         </div>
-        <p className="text-[11px] text-ink-muted mt-1.5">
-          {t((d) => d.common.journeyProgress)}
-        </p>
-      </div>
+      </Link>
 
-      <div className="grid grid-cols-2 gap-3 mb-5">
+      <div className="grid grid-cols-2 gap-3 mb-6">
         <StatCard
-          icon={<Zap size={18} />}
+          icon={<Flame size={14} />}
+          value={`${stats.streak}d`}
+          label={t((d) => d.dashboard.statStreak)}
+        />
+        <StatCard
+          icon={<Sparkles size={14} />}
           value={stats.xp}
           label={t((d) => d.dashboard.statXp)}
-          accent="gold"
         />
         <StatCard
-          icon={<Flame size={18} />}
-          value={stats.streak}
-          label={t((d) => d.dashboard.statStreak)}
-          accent="blue"
-        />
-        <StatCard
-          icon={<Clock size={18} />}
-          value={stats.totalMinutes}
+          icon={<Clock size={14} />}
+          value={formatStudyTime(stats.totalMinutes)}
           label={t((d) => d.dashboard.statMinutes)}
-          accent="green"
         />
         <StatCard
-          icon={<TrendingUp size={18} />}
-          value={`${stats.todayProgressPercent}%`}
-          label={t((d) => d.dashboard.statProgress)}
-          accent="blue"
+          icon={<Target size={14} />}
+          value={`${stats.monthCompletionPercent}%`}
+          label={monthTitle}
         />
       </div>
 
-      <div className="card-shadow rounded-2xl bg-surface border border-border p-5 flex items-center justify-between mb-6">
-        <div>
-          <p className="text-sm font-semibold text-ink mb-1">
-            {t((d) => d.dashboard.statProgress)}
-          </p>
-          <p className="text-xs text-ink-muted max-w-[140px]">
-            {t((d) => d.dashboard.quote)}
-          </p>
-        </div>
-        <ProgressRing
-          percent={stats.todayProgressPercent}
-          size={92}
-          strokeWidth={8}
-        />
-      </div>
-
-      <div className="flex items-center justify-between mb-3">
-        <h2 className="font-semibold text-ink">
-          {t((d) => d.dashboard.todayTasks)}
-        </h2>
-        <Link href="/tasks" className="text-xs font-semibold text-accent-strong">
-          {t((d) => d.dashboard.viewAll)}
-        </Link>
-      </div>
-      <div className="flex flex-col gap-2.5 mb-6">
-        {TASKS.slice(0, 4).map((task) => (
-          <TaskCard
-            key={task.id}
-            task={task}
-            completed={stats.todayRecord.completedTaskIds.includes(task.id)}
-          />
-        ))}
-      </div>
-
-      <h2 className="font-semibold text-ink mb-3">
+      <h2 className="font-serif text-lg text-ink mb-3">
         {t((d) => d.dashboard.latestAchievement)}
       </h2>
       {latestAchievement ? (

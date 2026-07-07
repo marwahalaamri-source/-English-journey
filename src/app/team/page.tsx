@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Flame, Zap } from "lucide-react";
+import { Flame, Sparkles } from "lucide-react";
 import { useApp } from "@/context/AppContext";
 import PageHeader from "@/components/PageHeader";
 import ProgressRing from "@/components/ProgressRing";
@@ -71,7 +71,7 @@ export default function TeamPage() {
                 </div>
                 <div className="flex items-center gap-3 mt-1 text-xs text-ink-muted">
                   <span className="flex items-center gap-1">
-                    <Zap size={12} className="text-gold" /> {stats.xp} XP
+                    <Sparkles size={12} className="text-gold" /> {stats.xp} XP
                   </span>
                   <span className="flex items-center gap-1">
                     <Flame size={12} className="text-accent-strong" />{" "}
@@ -83,13 +83,13 @@ export default function TeamPage() {
 
               <div className="shrink-0 flex flex-col items-center gap-1">
                 <ProgressRing
-                  percent={stats.todayProgressPercent}
+                  percent={stats.overallCompletionPercent}
                   size={52}
                   strokeWidth={5}
-                  label={`${stats.todayProgressPercent}%`}
+                  label={`${stats.overallCompletionPercent}%`}
                 />
                 <span className="text-[10px] text-ink-muted">
-                  {t((d) => d.team.progressToday)}
+                  {t((d) => d.journey.title)}
                 </span>
               </div>
             </div>

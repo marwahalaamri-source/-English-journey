@@ -9,6 +9,7 @@ import {
   Flame,
   Footprints,
   Headphones,
+  Home,
   LayoutDashboard,
   ListChecks,
   Mic,
@@ -17,6 +18,7 @@ import {
   Sparkles,
   SpellCheck,
   Star,
+  Target,
   Timer,
   Trophy,
   User,
@@ -47,6 +49,8 @@ export const ICONS = {
   Users,
   Award,
   User,
+  Home,
+  Target,
 } as const;
 
 export type IconName = keyof typeof ICONS;

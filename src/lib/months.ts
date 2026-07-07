@@ -27,3 +27,14 @@ export function getDayInMonth(day: number): number {
 export function getMonthKey(day: number): MonthKey {
   return MONTHS[getMonthIndex(day) - 1].key;
 }
+
+export function globalDayFromMonthAndLocal(
+  monthIndex: number,
+  localDay: number,
+): number {
+  return (monthIndex - 1) * DAYS_PER_MONTH + localDay;
+}
+
+export function isValidMonthIndex(value: number): value is 1 | 2 | 3 {
+  return value === 1 || value === 2 || value === 3;
+}

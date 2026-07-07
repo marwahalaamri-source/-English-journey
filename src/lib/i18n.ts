@@ -23,12 +23,12 @@ export interface Dictionary {
     markDone: string;
     undo: string;
     journeyProgress: string;
+    open: string;
   };
   months: Record<MonthKey, { title: string; tagline: string }>;
   nav: {
-    dashboard: string;
-    tasks: string;
-    calendar: string;
+    home: string;
+    journey: string;
     team: string;
     achievements: string;
     profile: string;
@@ -43,26 +43,20 @@ export interface Dictionary {
     start: string;
   };
   dashboard: {
-    greeting: string;
-    subtitle: string;
-    dayBadge: string;
+    greetingMorning: string;
+    greetingAfternoon: string;
+    greetingEvening: string;
     journeyLine: string;
+    todaysProgress: string;
+    tasksCompletedLabel: string;
     statXp: string;
     statStreak: string;
     statMinutes: string;
-    statProgress: string;
-    todayTasks: string;
-    viewAll: string;
     quote: string;
     latestAchievement: string;
     noAchievementYet: string;
   };
   tasks: {
-    title: string;
-    subtitle: string;
-    progressLabel: string;
-    allDone: string;
-    keepGoing: string;
     optionalBadge: string;
     task: Record<
       | "listening"
@@ -77,17 +71,17 @@ export interface Dictionary {
       { title: string; description: string }
     >;
   };
-  calendar: {
+  journey: {
+    eyebrow: string;
     title: string;
-    subtitle: string;
-    legendFull: string;
-    legendPartial: string;
-    legendNone: string;
-    noActivity: string;
-    tasksCompleted: string;
-    minutesLogged: string;
-    xpEarned: string;
-    selectDay: string;
+    description: string;
+    progress: string;
+    allMonths: string;
+    backToMonth: string;
+    monthEyebrow: string;
+    dayHeading: string;
+    taskCountLabel: string;
+    anyOrder: string;
   };
   team: {
     title: string;
@@ -161,6 +155,7 @@ export const dictionaries: Record<Language, Dictionary> = {
       markDone: "Mark done",
       undo: "Undo",
       journeyProgress: "Journey Progress",
+      open: "Open",
     },
     months: {
       foundation: {
@@ -177,16 +172,15 @@ export const dictionaries: Record<Language, Dictionary> = {
       },
     },
     nav: {
-      dashboard: "Dashboard",
-      tasks: "Tasks",
-      calendar: "Calendar",
+      home: "Home",
+      journey: "Journey",
       team: "Team",
       achievements: "Awards",
       profile: "Profile",
     },
     app: {
       name: "English Journey",
-      tagline: "Your daily path to fluency",
+      tagline: "A quiet study circle",
     },
     onboarding: {
       title: "Who's learning today?",
@@ -194,26 +188,20 @@ export const dictionaries: Record<Language, Dictionary> = {
       start: "Continue",
     },
     dashboard: {
-      greeting: "Welcome back, {{name}}",
-      subtitle: "Let's make today count.",
-      dayBadge: "Day {{day}}",
+      greetingMorning: "Good morning,",
+      greetingAfternoon: "Good afternoon,",
+      greetingEvening: "Good evening,",
       journeyLine: "Day {{dayInMonth}} of 30 · Month {{month}} · {{title}}",
-      statXp: "Total XP",
-      statStreak: "Day Streak",
+      todaysProgress: "Today's Progress",
+      tasksCompletedLabel: "tasks completed",
+      statXp: "XP",
+      statStreak: "Streak",
       statMinutes: "Study Time",
-      statProgress: "Today's Progress",
-      todayTasks: "Today's Tasks",
-      viewAll: "View all",
       quote: "Small steps every day lead to fluency.",
       latestAchievement: "Latest Achievement",
       noAchievementYet: "Complete tasks to earn your first badge",
     },
     tasks: {
-      title: "Daily Tasks",
-      subtitle: "Complete your tasks to build your streak",
-      progressLabel: "{{done}} of {{total}} required tasks done",
-      allDone: "All done for today. Amazing work!",
-      keepGoing: "Keep going, you're doing great!",
       optionalBadge: "Optional",
       task: {
         listening: {
@@ -256,17 +244,18 @@ export const dictionaries: Record<Language, Dictionary> = {
         },
       },
     },
-    calendar: {
-      title: "Calendar",
-      subtitle: "Track your daily learning activity",
-      legendFull: "Fully completed",
-      legendPartial: "Partially completed",
-      legendNone: "No activity",
-      noActivity: "No activity recorded",
-      tasksCompleted: "Tasks completed",
-      minutesLogged: "Minutes logged",
-      xpEarned: "XP earned",
-      selectDay: "Select a day to see details",
+    journey: {
+      eyebrow: "3 Months",
+      title: "The Journey",
+      description:
+        "Three 30-day challenges. Complete tasks in any order. Nothing is locked — the pace is yours.",
+      progress: "Progress",
+      allMonths: "All months",
+      backToMonth: "Back to {{title}}",
+      monthEyebrow: "Month {{month}} · {{title}}",
+      dayHeading: "Day {{day}}",
+      taskCountLabel: "{{done}} of {{total}} tasks",
+      anyOrder: "complete them in any order.",
     },
     team: {
       title: "Team Progress",
@@ -275,7 +264,7 @@ export const dictionaries: Record<Language, Dictionary> = {
       progressToday: "Today",
     },
     achievements: {
-      title: "Achievements",
+      title: "Awards",
       subtitle: "Badges you've earned on your journey",
       unlockedOn: "Unlocked {{date}}",
       stillLocked: "Keep learning to unlock",
@@ -374,6 +363,7 @@ export const dictionaries: Record<Language, Dictionary> = {
       markDone: "تحديد كمكتمل",
       undo: "تراجع",
       journeyProgress: "تقدم الرحلة",
+      open: "فتح",
     },
     months: {
       foundation: {
@@ -390,16 +380,15 @@ export const dictionaries: Record<Language, Dictionary> = {
       },
     },
     nav: {
-      dashboard: "الرئيسية",
-      tasks: "المهام",
-      calendar: "التقويم",
+      home: "الرئيسية",
+      journey: "الرحلة",
       team: "الفريق",
       achievements: "الإنجازات",
       profile: "الملف الشخصي",
     },
     app: {
       name: "English Journey",
-      tagline: "طريقك اليومي نحو الطلاقة",
+      tagline: "دائرة تعلّم هادئة",
     },
     onboarding: {
       title: "من المتعلم اليوم؟",
@@ -407,26 +396,20 @@ export const dictionaries: Record<Language, Dictionary> = {
       start: "متابعة",
     },
     dashboard: {
-      greeting: "أهلاً بعودتك، {{name}}",
-      subtitle: "لنجعل اليوم مميزًا.",
-      dayBadge: "اليوم {{day}}",
+      greetingMorning: "صباح الخير،",
+      greetingAfternoon: "مساء الخير،",
+      greetingEvening: "مساء الخير،",
       journeyLine: "اليوم {{dayInMonth}} من 30 · الشهر {{month}} · {{title}}",
-      statXp: "إجمالي نقاط الخبرة",
-      statStreak: "أيام التتابع",
+      todaysProgress: "تقدم اليوم",
+      tasksCompletedLabel: "مهام مكتملة",
+      statXp: "نقاط الخبرة",
+      statStreak: "التتابع",
       statMinutes: "وقت الدراسة",
-      statProgress: "تقدم اليوم",
-      todayTasks: "مهام اليوم",
-      viewAll: "عرض الكل",
       quote: "خطوات صغيرة كل يوم تقودك نحو الطلاقة.",
       latestAchievement: "آخر إنجاز",
       noAchievementYet: "أكمل المهام للحصول على أول وسام",
     },
     tasks: {
-      title: "المهام اليومية",
-      subtitle: "أكمل مهامك لبناء تتابعك",
-      progressLabel: "{{done}} من {{total}} مهام مطلوبة مكتملة",
-      allDone: "أحسنت! أكملت كل شيء اليوم.",
-      keepGoing: "استمر، أنت تقوم بعمل رائع!",
       optionalBadge: "اختياري",
       task: {
         listening: {
@@ -467,17 +450,18 @@ export const dictionaries: Record<Language, Dictionary> = {
         },
       },
     },
-    calendar: {
-      title: "التقويم",
-      subtitle: "تابع نشاطك التعليمي اليومي",
-      legendFull: "مكتمل بالكامل",
-      legendPartial: "مكتمل جزئيًا",
-      legendNone: "لا يوجد نشاط",
-      noActivity: "لا يوجد نشاط مسجل",
-      tasksCompleted: "المهام المكتملة",
-      minutesLogged: "الدقائق المسجلة",
-      xpEarned: "نقاط الخبرة المكتسبة",
-      selectDay: "اختر يومًا لعرض التفاصيل",
+    journey: {
+      eyebrow: "3 أشهر",
+      title: "الرحلة",
+      description:
+        "ثلاثة تحديات مدة كل منها 30 يومًا. أكمل المهام بأي ترتيب. لا شيء مُقفل — الوتيرة لك.",
+      progress: "التقدم",
+      allMonths: "كل الأشهر",
+      backToMonth: "العودة إلى {{title}}",
+      monthEyebrow: "الشهر {{month}} · {{title}}",
+      dayHeading: "اليوم {{day}}",
+      taskCountLabel: "{{done}} من {{total}} مهام",
+      anyOrder: "أكملها بأي ترتيب.",
     },
     team: {
       title: "تقدم الفريق",

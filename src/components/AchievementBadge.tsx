@@ -37,7 +37,7 @@ export default function AchievementBadge({
       >
         <Icon name={achievement.icon as IconName} size={26} />
       </div>
-      <div className="font-semibold text-sm text-ink">{title}</div>
+      <div className="font-serif text-base text-ink">{title}</div>
       <p className="text-xs text-ink-muted leading-snug">{description}</p>
       {unlocked ? (
         <span className="text-[10px] font-medium text-accent-strong mt-1">

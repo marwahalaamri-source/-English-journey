@@ -22,24 +22,22 @@ export interface TaskDefinition {
 
 export type MonthKey = "foundation" | "confidence" | "fluency";
 
+/** A single course day (1-90). Days are self-paced: any day can be
+ * completed in any order, independent of the real calendar date. */
 export interface DayRecord {
-  date: string; // YYYY-MM-DD
   completedTaskIds: TaskId[];
   minutes: number;
   xpEarned: number;
+  /** Real calendar dates (YYYY-MM-DD) on which this day received any
+   * completion. Used only to derive the activity streak. */
+  datesTouched: string[];
 }
 
 export interface UserProgress {
   userId: UserId;
   displayName: string;
   startDate: string; // YYYY-MM-DD, first day the user opened the app
-  xp: number;
-  streak: number;
-  longestStreak: number;
-  totalMinutes: number;
-  lastCompletedDate: string | null;
-  taskCounts: Partial<Record<TaskId, number>>;
-  history: Record<string, DayRecord>;
+  history: Record<number, DayRecord>; // keyed by course day 1-90
   unlockedAchievements: Record<string, string>; // achievementId -> date unlocked
 }
 

@@ -8,10 +8,11 @@ import type { TaskDefinition } from "@/lib/types";
 interface TaskCardProps {
   task: TaskDefinition;
   completed: boolean;
+  onToggle: () => void;
 }
 
-export default function TaskCard({ task, completed }: TaskCardProps) {
-  const { toggleTask, t } = useApp();
+export default function TaskCard({ task, completed, onToggle }: TaskCardProps) {
+  const { t } = useApp();
   const title = t((d) => d.tasks.task[task.id].title);
   const description = t((d) => d.tasks.task[task.id].description);
   const optionalLabel = t((d) => d.tasks.optionalBadge);
@@ -67,7 +68,7 @@ export default function TaskCard({ task, completed }: TaskCardProps) {
           </a>
         )}
         <button
-          onClick={() => toggleTask(task.id)}
+          onClick={onToggle}
           className={`tap-scale flex items-center justify-center gap-1.5 rounded-xl text-xs font-semibold py-2.5 px-3.5 border ${
             task.resourceUrl ? "" : "flex-1"
           } ${

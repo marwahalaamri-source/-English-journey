@@ -49,7 +49,7 @@ export default function ProgressRing({
       </svg>
       <div className="absolute flex flex-col items-center justify-center">
         <span
-          className="font-bold text-ink"
+          className="font-serif text-ink"
           style={{ fontSize: size < 70 ? 13 : size < 100 ? 18 : 24 }}
         >
           {label ?? `${clamped}%`}
