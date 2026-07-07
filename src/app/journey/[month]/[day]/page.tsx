@@ -5,6 +5,9 @@ import { notFound, useParams } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 import { useApp } from "@/context/AppContext";
 import TaskCard from "@/components/TaskCard";
+import VocabularyJournal from "@/components/VocabularyJournal";
+import YesterdaysWords from "@/components/YesterdaysWords";
+import DailyNotes from "@/components/DailyNotes";
 import { MONTHS, TOTAL_JOURNEY_DAYS, getDayInMonth, isValidMonthIndex } from "@/lib/months";
 import { getDayRecord, requiredCompletedCount } from "@/lib/selectors";
 import { OPTIONAL_TASKS, REQUIRED_TASK_COUNT, REQUIRED_TASKS } from "@/lib/tasks";
@@ -13,7 +16,7 @@ export default function DayDetailPage() {
   const params = useParams<{ month: string; day: string }>();
   const monthIndex = Number(params.month);
   const globalDay = Number(params.day);
-  const { progress, toggleTask, t } = useApp();
+  const { progress, toggleTask, updateDayJournal, t } = useApp();
 
   if (
     !isValidMonthIndex(monthIndex) ||
@@ -29,6 +32,7 @@ export default function DayDetailPage() {
   const monthTitle = t((d) => d.months[monthMeta.key].title);
   const localDay = getDayInMonth(globalDay);
   const record = getDayRecord(progress.history, globalDay);
+  const previousRecord = getDayRecord(progress.history, globalDay - 1);
   const doneCount = requiredCompletedCount(record);
 
   return (
@@ -57,12 +61,31 @@ export default function DayDetailPage() {
 
       <div className="flex flex-col gap-2.5 mb-6">
         {REQUIRED_TASKS.map((task) => (
-          <TaskCard
-            key={task.id}
-            task={task}
-            completed={record.completedTaskIds.includes(task.id)}
-            onToggle={() => toggleTask(globalDay, task.id)}
-          />
+          <div key={task.id} className="flex flex-col gap-2.5">
+            <TaskCard
+              task={task}
+              completed={record.completedTaskIds.includes(task.id)}
+              onToggle={() => toggleTask(globalDay, task.id)}
+            />
+            {task.id === "vocabulary" && (
+              <VocabularyJournal
+                words={record.vocabWords}
+                example={record.vocabExample}
+                onChangeWords={(value) =>
+                  updateDayJournal(globalDay, { vocabWords: value })
+                }
+                onChangeExample={(value) =>
+                  updateDayJournal(globalDay, { vocabExample: value })
+                }
+              />
+            )}
+            {task.id === "vocabularyReview" && (
+              <YesterdaysWords
+                words={previousRecord.vocabWords}
+                example={previousRecord.vocabExample}
+              />
+            )}
+          </div>
         ))}
       </div>
 
@@ -71,7 +94,7 @@ export default function DayDetailPage() {
           <h2 className="font-semibold text-ink mb-3 text-sm">
             {t((d) => d.common.optional)}
           </h2>
-          <div className="flex flex-col gap-2.5">
+          <div className="flex flex-col gap-2.5 mb-6">
             {OPTIONAL_TASKS.map((task) => (
               <TaskCard
                 key={task.id}
@@ -83,6 +106,11 @@ export default function DayDetailPage() {
           </div>
         </>
       )}
+
+      <DailyNotes
+        value={record.notes}
+        onCommit={(value) => updateDayJournal(globalDay, { notes: value })}
+      />
     </div>
   );
 }

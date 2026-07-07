@@ -5,15 +5,19 @@ import { Flame, Sparkles } from "lucide-react";
 import { useApp } from "@/context/AppContext";
 import PageHeader from "@/components/PageHeader";
 import ProgressRing from "@/components/ProgressRing";
+import TeamWallSection from "@/components/TeamWallSection";
 import { todayStr } from "@/lib/date";
 import { deriveStats } from "@/lib/selectors";
 import { loadAllProgress } from "@/lib/storage";
 import { getUserMeta } from "@/lib/users";
 import type { UserProgress } from "@/lib/types";
 
+type TeamTab = "progress" | "wall";
+
 export default function TeamPage() {
   const { currentUserId, t } = useApp();
   const [allProgress, setAllProgress] = useState<UserProgress[] | null>(null);
+  const [tab, setTab] = useState<TeamTab>("progress");
 
   // Read localStorage on mount only; server has no access to it.
   useEffect(() => {
@@ -35,6 +39,28 @@ export default function TeamPage() {
         subtitle={t((d) => d.team.subtitle)}
       />
 
+      <div className="grid grid-cols-2 gap-2 mb-5 rounded-full bg-cream-soft border border-border p-1">
+        <button
+          onClick={() => setTab("progress")}
+          className={`tap-scale rounded-full py-2 text-sm font-semibold ${
+            tab === "progress" ? "bg-surface card-shadow text-ink" : "text-ink-muted"
+          }`}
+        >
+          {t((d) => d.teamWall.tabProgress)}
+        </button>
+        <button
+          onClick={() => setTab("wall")}
+          className={`tap-scale rounded-full py-2 text-sm font-semibold ${
+            tab === "wall" ? "bg-surface card-shadow text-ink" : "text-ink-muted"
+          }`}
+        >
+          {t((d) => d.teamWall.tabWall)}
+        </button>
+      </div>
+
+      {tab === "wall" ? (
+        <TeamWallSection />
+      ) : (
       <div className="flex flex-col gap-3">
         {ranked.map(({ progress, stats }, index) => {
           const meta = getUserMeta(progress.userId);
@@ -96,6 +122,7 @@ export default function TeamPage() {
           );
         })}
       </div>
+      )}
     </div>
   );
 }

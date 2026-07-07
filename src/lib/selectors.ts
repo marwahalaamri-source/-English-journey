@@ -9,14 +9,25 @@ import {
 import type { DayRecord, TaskId, UserProgress } from "./types";
 
 export function emptyDayRecord(): DayRecord {
-  return { completedTaskIds: [], minutes: 0, xpEarned: 0, datesTouched: [] };
+  return {
+    completedTaskIds: [],
+    minutes: 0,
+    xpEarned: 0,
+    datesTouched: [],
+    vocabWords: "",
+    vocabExample: "",
+    notes: "",
+  };
 }
 
 export function getDayRecord(
   history: Record<number, DayRecord>,
   day: number,
 ): DayRecord {
-  return history[day] ?? emptyDayRecord();
+  const stored = history[day];
+  if (!stored) return emptyDayRecord();
+  // Merge over defaults so records saved before a field existed still work.
+  return { ...emptyDayRecord(), ...stored };
 }
 
 export function isFullyCompleted(record: DayRecord | undefined): boolean {
@@ -200,6 +211,7 @@ export function toggleTaskInHistory(
       : existing.datesTouched;
 
   const updated: DayRecord = {
+    ...existing,
     completedTaskIds,
     minutes: Math.max(0, minutes),
     xpEarned: Math.max(0, xpEarned),
@@ -207,4 +219,13 @@ export function toggleTaskInHistory(
   };
 
   return { ...history, [day]: updated };
+}
+
+export function updateDayJournal(
+  history: Record<number, DayRecord>,
+  day: number,
+  patch: Partial<Pick<DayRecord, "vocabWords" | "vocabExample" | "notes">>,
+): Record<number, DayRecord> {
+  const existing = getDayRecord(history, day);
+  return { ...history, [day]: { ...existing, ...patch } };
 }

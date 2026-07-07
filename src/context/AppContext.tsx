@@ -12,7 +12,12 @@ import type { ReactNode } from "react";
 import { todayStr } from "@/lib/date";
 import { computeUnlockedIds } from "@/lib/achievements";
 import { dictionaries, interpolate, type Dictionary } from "@/lib/i18n";
-import { deriveStats, toggleTaskInHistory, type DerivedStats } from "@/lib/selectors";
+import {
+  deriveStats,
+  toggleTaskInHistory,
+  updateDayJournal as updateDayJournalInHistory,
+  type DerivedStats,
+} from "@/lib/selectors";
 import {
   getCurrentUserId,
   getStoredLanguage,
@@ -25,7 +30,14 @@ import {
   setStoredTheme,
 } from "@/lib/storage";
 import { getUserMeta, USERS } from "@/lib/users";
-import type { Language, TaskId, ThemeMode, UserId, UserProgress } from "@/lib/types";
+import type {
+  DayRecord,
+  Language,
+  TaskId,
+  ThemeMode,
+  UserId,
+  UserProgress,
+} from "@/lib/types";
 
 interface AppContextValue {
   mounted: boolean;
@@ -41,6 +53,10 @@ interface AppContextValue {
   selectUser: (id: UserId) => void;
   switchToPicker: () => void;
   toggleTask: (day: number, taskId: TaskId) => void;
+  updateDayJournal: (
+    day: number,
+    patch: Partial<Pick<DayRecord, "vocabWords" | "vocabExample" | "notes">>,
+  ) => void;
   updateDisplayName: (name: string) => void;
   resetMyProgress: () => void;
   t: (selector: (d: Dictionary) => string, vars?: Record<string, string | number>) => string;
@@ -144,6 +160,22 @@ export function AppProvider({ children }: { children: ReactNode }) {
     [],
   );
 
+  const updateDayJournal = useCallback(
+    (
+      day: number,
+      patch: Partial<Pick<DayRecord, "vocabWords" | "vocabExample" | "notes">>,
+    ) => {
+      setProgress((prev) => {
+        if (!prev) return prev;
+        const history = updateDayJournalInHistory(prev.history, day, patch);
+        const next: UserProgress = { ...prev, history };
+        saveProgress(next);
+        return next;
+      });
+    },
+    [],
+  );
+
   const updateDisplayName = useCallback((name: string) => {
     setProgress((prev) => {
       if (!prev) return prev;
@@ -188,6 +220,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     selectUser,
     switchToPicker,
     toggleTask,
+    updateDayJournal,
     updateDisplayName,
     resetMyProgress,
     t,

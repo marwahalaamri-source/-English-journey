@@ -12,6 +12,13 @@ Marwah, Ebtehal, Meead, and Fatimah.
 - **Daily Tasks** (per day) – Listening, Vocabulary, Vocabulary Review,
   Grammar, Grammar Review, Reading, Speaking, AI Feedback, and optional
   Shadowing, each linking directly to its real resource
+- **Vocabulary Journal** – write down each day's new words and an example
+  sentence; shown again as "Yesterday's Words" during the next day's
+  Vocabulary Review
+- **Daily Notes** – a private, free-form notes box on every day
+- **Team Wall** – a shared message board (under the Team tab) where the four
+  learners can post encouragement, reminders, and study updates, with quick
+  ❤️ 👏 🔥 reactions
 - **Team Progress** – see how all four learners are doing
 - **Awards** – unlockable badges for streaks, XP milestones, and more
 - **Profile** – edit your display name, switch users, reset your progress

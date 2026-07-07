@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, Clock, Flame, Sparkles, Target } from "lucide-react";
 import { useApp } from "@/context/AppContext";
@@ -9,6 +10,8 @@ import { ACHIEVEMENTS } from "@/lib/achievements";
 import { getMonthKey } from "@/lib/months";
 import { REQUIRED_TASK_COUNT } from "@/lib/tasks";
 import { requiredCompletedCount } from "@/lib/selectors";
+import { getLatestMessage, type TeamMessage } from "@/lib/teamWall";
+import { getUserMeta } from "@/lib/users";
 
 function greetingKey(): "greetingMorning" | "greetingAfternoon" | "greetingEvening" {
   const hour = new Date().getHours();
@@ -26,6 +29,15 @@ function formatStudyTime(totalMinutes: number): string {
 
 export default function DashboardPage() {
   const { progress, stats, t } = useApp();
+  const [latestMessage, setLatestMessage] = useState<TeamMessage | null | undefined>(
+    undefined,
+  );
+
+  // Read localStorage on mount only; server has no access to it.
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setLatestMessage(getLatestMessage());
+  }, []);
 
   if (!progress || !stats) return null;
 
@@ -106,6 +118,43 @@ export default function DashboardPage() {
           label={monthTitle}
         />
       </div>
+
+      {latestMessage !== undefined && (
+        <>
+          <h2 className="font-serif text-lg text-ink mb-3">
+            {t((d) => d.teamWall.teamMessageCard)}
+          </h2>
+          <Link
+            href="/team"
+            className="tap-scale card-shadow rounded-2xl bg-surface border border-border p-4 flex items-center gap-3 mb-6"
+          >
+            {latestMessage ? (
+              <>
+                <div
+                  className="w-10 h-10 rounded-full flex items-center justify-center text-lg shrink-0"
+                  style={{
+                    backgroundColor: `${getUserMeta(latestMessage.userId).color}33`,
+                  }}
+                >
+                  {getUserMeta(latestMessage.userId).emoji}
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-ink truncate">
+                    {getUserMeta(latestMessage.userId).name}
+                  </p>
+                  <p dir="auto" className="text-xs text-ink-muted truncate">
+                    {latestMessage.text}
+                  </p>
+                </div>
+              </>
+            ) : (
+              <p className="text-sm text-ink-muted">
+                {t((d) => d.teamWall.noMessagesYet)}
+              </p>
+            )}
+          </Link>
+        </>
+      )}
 
       <h2 className="font-serif text-lg text-ink mb-3">
         {t((d) => d.dashboard.latestAchievement)}

@@ -31,6 +31,12 @@ export interface DayRecord {
   /** Real calendar dates (YYYY-MM-DD) on which this day received any
    * completion. Used only to derive the activity streak. */
   datesTouched: string[];
+  /** New vocabulary words the learner wrote down for this day. */
+  vocabWords: string;
+  /** One example sentence using a new word from this day. */
+  vocabExample: string;
+  /** Free-form private notes for this day. */
+  notes: string;
 }
 
 export interface UserProgress {

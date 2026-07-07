@@ -83,6 +83,27 @@ export interface Dictionary {
     taskCountLabel: string;
     anyOrder: string;
   };
+  journal: {
+    wordsToday: string;
+    wordsPlaceholder: string;
+    exampleSentence: string;
+    examplePlaceholder: string;
+    yesterdaysWords: string;
+    noYesterdayWords: string;
+    todaysNotes: string;
+    notesPlaceholder: string;
+  };
+  teamWall: {
+    title: string;
+    subtitle: string;
+    placeholder: string;
+    post: string;
+    empty: string;
+    tabProgress: string;
+    tabWall: string;
+    teamMessageCard: string;
+    noMessagesYet: string;
+  };
   team: {
     title: string;
     subtitle: string;
@@ -256,6 +277,27 @@ export const dictionaries: Record<Language, Dictionary> = {
       dayHeading: "Day {{day}}",
       taskCountLabel: "{{done}} of {{total}} tasks",
       anyOrder: "complete them in any order.",
+    },
+    journal: {
+      wordsToday: "Words I learned today",
+      wordsPlaceholder: "Type the new words you learned...",
+      exampleSentence: "Example sentence",
+      examplePlaceholder: "Write one sentence using a new word...",
+      yesterdaysWords: "Yesterday's Words",
+      noYesterdayWords: "No words saved yet.",
+      todaysNotes: "Today's Notes",
+      notesPlaceholder: "Write anything about today's lesson...",
+    },
+    teamWall: {
+      title: "Team Wall",
+      subtitle: "Share encouragement, reminders, and study updates",
+      placeholder: "Share something with the team...",
+      post: "Post",
+      empty: "No messages yet. Be the first to say something!",
+      tabProgress: "Progress",
+      tabWall: "Wall",
+      teamMessageCard: "Team Message",
+      noMessagesYet: "No messages yet",
     },
     team: {
       title: "Team Progress",
@@ -462,6 +504,27 @@ export const dictionaries: Record<Language, Dictionary> = {
       dayHeading: "اليوم {{day}}",
       taskCountLabel: "{{done}} من {{total}} مهام",
       anyOrder: "أكملها بأي ترتيب.",
+    },
+    journal: {
+      wordsToday: "الكلمات التي تعلمتها اليوم",
+      wordsPlaceholder: "اكتب الكلمات الجديدة التي تعلمتها...",
+      exampleSentence: "جملة مثال",
+      examplePlaceholder: "اكتب جملة واحدة باستخدام كلمة جديدة...",
+      yesterdaysWords: "كلمات الأمس",
+      noYesterdayWords: "لا توجد كلمات محفوظة بعد.",
+      todaysNotes: "ملاحظات اليوم",
+      notesPlaceholder: "اكتب أي شيء عن درس اليوم...",
+    },
+    teamWall: {
+      title: "حائط الفريق",
+      subtitle: "شارك التشجيع والتذكيرات وتحديثات الدراسة",
+      placeholder: "شارك شيئًا مع الفريق...",
+      post: "نشر",
+      empty: "لا توجد رسائل بعد. كن أول من يكتب شيئًا!",
+      tabProgress: "التقدم",
+      tabWall: "الحائط",
+      teamMessageCard: "رسالة الفريق",
+      noMessagesYet: "لا توجد رسائل بعد",
     },
     team: {
       title: "تقدم الفريق",
