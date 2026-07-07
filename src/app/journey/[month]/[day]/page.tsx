@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { notFound, useParams } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
@@ -8,6 +9,7 @@ import TaskCard from "@/components/TaskCard";
 import VocabularyJournal from "@/components/VocabularyJournal";
 import YesterdaysWords from "@/components/YesterdaysWords";
 import DailyNotes from "@/components/DailyNotes";
+import { fetchDayEntry, subscribeToDayEntry } from "@/lib/dayEntries";
 import { MONTHS, TOTAL_JOURNEY_DAYS, getDayInMonth, isValidMonthIndex } from "@/lib/months";
 import { getDayRecord, requiredCompletedCount } from "@/lib/selectors";
 import { OPTIONAL_TASKS, REQUIRED_TASK_COUNT, REQUIRED_TASKS } from "@/lib/tasks";
@@ -17,6 +19,38 @@ export default function DayDetailPage() {
   const monthIndex = Number(params.month);
   const globalDay = Number(params.day);
   const { progress, toggleTask, updateDayJournal, t } = useApp();
+  const userId = progress?.userId ?? null;
+
+  // Guards the one-time initial fetch below from clobbering text the user
+  // has already started typing before that fetch resolves. Realtime
+  // updates (genuine changes from another device) are applied regardless.
+  const hasEditedRef = useRef(false);
+
+  useEffect(() => {
+    hasEditedRef.current = false;
+    if (!userId) return;
+    let cancelled = false;
+
+    async function syncFromRemote() {
+      const [current, previous] = await Promise.all([
+        fetchDayEntry(userId!, globalDay),
+        fetchDayEntry(userId!, globalDay - 1),
+      ]);
+      if (cancelled) return;
+      if (current && !hasEditedRef.current) updateDayJournal(globalDay, current);
+      if (previous) updateDayJournal(globalDay - 1, previous);
+    }
+    syncFromRemote();
+
+    const unsubscribe = subscribeToDayEntry(userId, globalDay, (fields) => {
+      if (!cancelled) updateDayJournal(globalDay, fields);
+    });
+
+    return () => {
+      cancelled = true;
+      unsubscribe();
+    };
+  }, [userId, globalDay, updateDayJournal]);
 
   if (
     !isValidMonthIndex(monthIndex) ||
@@ -34,6 +68,13 @@ export default function DayDetailPage() {
   const record = getDayRecord(progress.history, globalDay);
   const previousRecord = getDayRecord(progress.history, globalDay - 1);
   const doneCount = requiredCompletedCount(record);
+
+  function markEdited<T>(fn: (value: T) => void) {
+    return (value: T) => {
+      hasEditedRef.current = true;
+      fn(value);
+    };
+  }
 
   return (
     <div className="pb-4">
@@ -71,12 +112,12 @@ export default function DayDetailPage() {
               <VocabularyJournal
                 words={record.vocabWords}
                 example={record.vocabExample}
-                onChangeWords={(value) =>
-                  updateDayJournal(globalDay, { vocabWords: value })
-                }
-                onChangeExample={(value) =>
-                  updateDayJournal(globalDay, { vocabExample: value })
-                }
+                onChangeWords={markEdited((value: string) =>
+                  updateDayJournal(globalDay, { vocabWords: value }),
+                )}
+                onChangeExample={markEdited((value: string) =>
+                  updateDayJournal(globalDay, { vocabExample: value }),
+                )}
               />
             )}
             {task.id === "vocabularyReview" && (
@@ -109,7 +150,9 @@ export default function DayDetailPage() {
 
       <DailyNotes
         value={record.notes}
-        onCommit={(value) => updateDayJournal(globalDay, { notes: value })}
+        onCommit={markEdited((value: string) =>
+          updateDayJournal(globalDay, { notes: value }),
+        )}
       />
     </div>
   );

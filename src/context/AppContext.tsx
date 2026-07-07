@@ -11,6 +11,7 @@ import {
 import type { ReactNode } from "react";
 import { todayStr } from "@/lib/date";
 import { computeUnlockedIds } from "@/lib/achievements";
+import { upsertDayEntry } from "@/lib/dayEntries";
 import { dictionaries, interpolate, type Dictionary } from "@/lib/i18n";
 import {
   deriveStats,
@@ -170,6 +171,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
         const history = updateDayJournalInHistory(prev.history, day, patch);
         const next: UserProgress = { ...prev, history };
         saveProgress(next);
+        // Fire-and-forget cross-device sync; localStorage above is the
+        // instant, offline-safe write and stays the fallback if this fails
+        // or Supabase isn't configured.
+        upsertDayEntry(prev.userId, day, patch);
         return next;
       });
     },
