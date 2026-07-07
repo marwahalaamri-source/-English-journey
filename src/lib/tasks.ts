@@ -1,6 +1,7 @@
 import type { TaskDefinition, TaskId } from "./types";
 
-const LISTENING_URL = "https://www.youtube.com/results?search_query=Daily+English+Listening";
+const LISTENING_URL =
+  "https://podcasts.apple.com/sa/podcast/daily-english-listening-%D8%A7%D8%B3%D8%AA%D9%85%D8%A7%D8%B9-%D8%A7%D9%84%D8%A5%D9%86%D8%AC%D9%84%D9%8A%D8%B2%D9%8A%D8%A9-%D9%8A%D9%88%D9%85%D9%8A%D8%A7/id1755537616?l=ar";
 const VOCABULARY_BOOKLET_URL =
   "https://cdn.dalilkplatform.com/storage/2025/06/02082415/Booklet-350-Words-final-td.pdf";
 const GRAMMAR_BOOKLET_URL =
