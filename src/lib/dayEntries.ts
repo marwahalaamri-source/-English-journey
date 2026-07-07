@@ -1,5 +1,7 @@
-import { getSupabaseClient, isSupabaseConfigured } from "./supabaseClient";
+import { getSupabaseClient, isSupabaseConfigured, withTimeout } from "./supabaseClient";
 import type { UserId } from "./types";
+
+const NETWORK_TIMEOUT_MS = 8000;
 
 export interface DayEntryFields {
   vocabWords: string;
@@ -35,12 +37,11 @@ export async function fetchDayEntry(
 ): Promise<DayEntryFields | null> {
   if (!isSupabaseConfigured()) return null;
   const supabase = getSupabaseClient()!;
-  const { data, error } = await supabase
-    .from(TABLE)
-    .select("*")
-    .eq("user_id", userId)
-    .eq("day", day)
-    .maybeSingle();
+  const { data, error } = await withTimeout(
+    supabase.from(TABLE).select("*").eq("user_id", userId).eq("day", day).maybeSingle(),
+    NETWORK_TIMEOUT_MS,
+    { data: null, error: new Error("Timed out reaching Supabase") },
+  );
   if (error || !data) return null;
   return rowToFields(data as DayEntryRow);
 }
@@ -60,14 +61,18 @@ export async function upsertDayEntry(
   if (patch.vocabExample !== undefined) columnPatch.vocab_example = patch.vocabExample;
   if (patch.notes !== undefined) columnPatch.notes = patch.notes;
 
-  const { error } = await supabase.from(TABLE).upsert(
-    {
-      user_id: userId,
-      day,
-      ...columnPatch,
-      updated_at: new Date().toISOString(),
-    },
-    { onConflict: "user_id,day" },
+  const { error } = await withTimeout(
+    supabase.from(TABLE).upsert(
+      {
+        user_id: userId,
+        day,
+        ...columnPatch,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "user_id,day" },
+    ),
+    NETWORK_TIMEOUT_MS,
+    { error: new Error("Timed out reaching Supabase") },
   );
   if (error) {
     console.error("Failed to sync day entry to Supabase:", error.message);

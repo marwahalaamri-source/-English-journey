@@ -9,6 +9,7 @@ import TaskCard from "@/components/TaskCard";
 import VocabularyJournal from "@/components/VocabularyJournal";
 import YesterdaysWords from "@/components/YesterdaysWords";
 import DailyNotes from "@/components/DailyNotes";
+import SyncStatusNotice from "@/components/SyncStatusNotice";
 import { fetchDayEntry, subscribeToDayEntry } from "@/lib/dayEntries";
 import { MONTHS, TOTAL_JOURNEY_DAYS, getDayInMonth, isValidMonthIndex } from "@/lib/months";
 import { getDayRecord, requiredCompletedCount } from "@/lib/selectors";
@@ -148,6 +149,7 @@ export default function DayDetailPage() {
         </>
       )}
 
+      <SyncStatusNotice />
       <DailyNotes
         value={record.notes}
         onCommit={markEdited((value: string) =>

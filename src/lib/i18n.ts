@@ -24,6 +24,8 @@ export interface Dictionary {
     undo: string;
     journeyProgress: string;
     open: string;
+    notSyncedTitle: string;
+    notSyncedBody: string;
   };
   months: Record<MonthKey, { title: string; tagline: string }>;
   nav: {
@@ -177,6 +179,9 @@ export const dictionaries: Record<Language, Dictionary> = {
       undo: "Undo",
       journeyProgress: "Journey Progress",
       open: "Open",
+      notSyncedTitle: "Not syncing across devices",
+      notSyncedBody:
+        "Supabase isn't connected in this deployment — this is only saved on this device. Check the environment variables in Vercel and redeploy.",
     },
     months: {
       foundation: {
@@ -406,6 +411,9 @@ export const dictionaries: Record<Language, Dictionary> = {
       undo: "تراجع",
       journeyProgress: "تقدم الرحلة",
       open: "فتح",
+      notSyncedTitle: "لا تتم المزامنة بين الأجهزة",
+      notSyncedBody:
+        "لم يتم توصيل Supabase في هذا الإصدار — يُحفظ هذا على هذا الجهاز فقط. تحقق من متغيرات البيئة في Vercel وأعد النشر.",
     },
     months: {
       foundation: {

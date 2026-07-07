@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useApp } from "@/context/AppContext";
+import SyncStatusNotice from "./SyncStatusNotice";
 import { getUserMeta } from "@/lib/users";
 import {
   addMessage,
@@ -59,6 +60,7 @@ export default function TeamWallSection() {
 
   return (
     <div>
+      <SyncStatusNotice />
       <div className="rounded-2xl border border-border bg-surface p-4 mb-4">
         <textarea
           dir="auto"

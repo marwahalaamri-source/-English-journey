@@ -1,4 +1,6 @@
-import { getSupabaseClient, isSupabaseConfigured } from "./supabaseClient";
+import { getSupabaseClient, isSupabaseConfigured, withTimeout } from "./supabaseClient";
+
+const NETWORK_TIMEOUT_MS = 8000;
 import * as local from "./teamWallLocal";
 import type { UserId } from "./types";
 import type { ReactionCounts, TeamMessage } from "./teamWallTypes";
@@ -40,10 +42,11 @@ function rowToMessage(row: TeamMessageRow): TeamMessage {
 export async function loadMessages(): Promise<TeamMessage[]> {
   if (!isSupabaseConfigured()) return local.loadMessages();
   const supabase = getSupabaseClient()!;
-  const { data, error } = await supabase
-    .from(TABLE)
-    .select("*")
-    .order("created_at", { ascending: false });
+  const { data, error } = await withTimeout(
+    supabase.from(TABLE).select("*").order("created_at", { ascending: false }),
+    NETWORK_TIMEOUT_MS,
+    { data: null, error: new Error("Timed out reaching Supabase") },
+  );
   if (error) {
     console.error("Failed to load team messages from Supabase:", error.message);
     return [];
@@ -57,9 +60,11 @@ export async function addMessage(
 ): Promise<TeamMessage[]> {
   if (!isSupabaseConfigured()) return local.addMessage(userId, text);
   const supabase = getSupabaseClient()!;
-  const { error } = await supabase
-    .from(TABLE)
-    .insert({ user_id: userId, text });
+  const { error } = await withTimeout(
+    supabase.from(TABLE).insert({ user_id: userId, text }),
+    NETWORK_TIMEOUT_MS,
+    { error: new Error("Timed out reaching Supabase") },
+  );
   if (error) {
     console.error("Failed to post team message to Supabase:", error.message);
   }
@@ -74,18 +79,19 @@ export async function reactToMessage(
   const supabase = getSupabaseClient()!;
   const column = REACTION_COLUMNS[reaction];
 
-  const { data: current, error: readError } = await supabase
-    .from(TABLE)
-    .select(column)
-    .eq("id", id)
-    .single();
+  const { data: current, error: readError } = await withTimeout(
+    supabase.from(TABLE).select(column).eq("id", id).single(),
+    NETWORK_TIMEOUT_MS,
+    { data: null, error: new Error("Timed out reaching Supabase") },
+  );
 
   if (!readError && current) {
     const currentCount = (current as unknown as Record<string, number>)[column] ?? 0;
-    const { error: updateError } = await supabase
-      .from(TABLE)
-      .update({ [column]: currentCount + 1 })
-      .eq("id", id);
+    const { error: updateError } = await withTimeout(
+      supabase.from(TABLE).update({ [column]: currentCount + 1 }).eq("id", id),
+      NETWORK_TIMEOUT_MS,
+      { error: new Error("Timed out reaching Supabase") },
+    );
     if (updateError) {
       console.error("Failed to react to team message:", updateError.message);
     }
