@@ -1,6 +1,8 @@
 import type { TaskDefinition, TaskId } from "./types";
 
 const LISTENING_URL = "https://www.youtube.com/results?search_query=Daily+English+Listening";
+const VOCABULARY_BOOKLET_URL =
+  "https://cdn.dalilkplatform.com/storage/2025/06/02082415/Booklet-350-Words-final-td.pdf";
 
 export const TASKS: TaskDefinition[] = [
   {
@@ -10,8 +12,20 @@ export const TASKS: TaskDefinition[] = [
     icon: "Headphones",
     resourceUrl: LISTENING_URL,
   },
-  { id: "vocabulary", minutes: 5, xp: 10, icon: "BookOpen" },
-  { id: "vocabularyReview", minutes: 5, xp: 10, icon: "RotateCcw" },
+  {
+    id: "vocabulary",
+    minutes: 5,
+    xp: 10,
+    icon: "BookOpen",
+    resourceUrl: VOCABULARY_BOOKLET_URL,
+  },
+  {
+    id: "vocabularyReview",
+    minutes: 5,
+    xp: 10,
+    icon: "RotateCcw",
+    resourceUrl: VOCABULARY_BOOKLET_URL,
+  },
   { id: "grammar", minutes: 5, xp: 10, icon: "SpellCheck" },
   { id: "grammarReview", minutes: 5, xp: 10, icon: "RefreshCw" },
   {
