@@ -54,6 +54,20 @@ export function findCurrentDay(history: Record<number, DayRecord>): number {
   return TOTAL_JOURNEY_DAYS;
 }
 
+/** Whether this learner fully finished a course day's required tasks on
+ * today's real calendar date. Deliberately checks the whole history rather
+ * than just the "current" course day: finishing a day immediately advances
+ * findCurrentDay() to the next (empty) one, so checking only the current
+ * day would never see 100% right after someone finishes. */
+export function completedRequiredTasksToday(
+  history: Record<number, DayRecord>,
+  today: string,
+): boolean {
+  return Object.values(history).some(
+    (record) => isFullyCompleted(record) && record.datesTouched.includes(today),
+  );
+}
+
 export function computeStreakStats(
   activityDates: Set<string>,
   today: string,

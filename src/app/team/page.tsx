@@ -13,12 +13,14 @@ import {
   subscribeToAllProgress,
   type RemoteProgressFields,
 } from "@/lib/progressSync";
-import { deriveStats } from "@/lib/selectors";
+import { completedRequiredTasksToday, deriveStats } from "@/lib/selectors";
 import { loadAllProgress } from "@/lib/storage";
 import { getUserMeta } from "@/lib/users";
 import type { UserProgress } from "@/lib/types";
 
 type TeamTab = "progress" | "wall";
+
+const MEDALS = ["🥇", "🥈", "🥉"];
 
 export default function TeamPage() {
   const { currentUserId, progress: myProgress, t } = useApp();
@@ -72,6 +74,9 @@ export default function TeamPage() {
   const ranked = merged
     .map((p) => ({ progress: p, stats: deriveStats(p, today) }))
     .sort((a, b) => b.stats.xp - a.stats.xp);
+  const everyoneDoneToday =
+    ranked.length > 0 &&
+    ranked.every(({ progress }) => completedRequiredTasksToday(progress.history, today));
 
   return (
     <div className="pb-4">
@@ -104,6 +109,16 @@ export default function TeamPage() {
       ) : (
       <div className="flex flex-col gap-3">
         <SyncStatusNotice />
+        {everyoneDoneToday && (
+          <div className="rounded-2xl border border-gold bg-gradient-to-br from-accent-soft to-cream-soft p-5 text-center card-shadow">
+            <p className="font-serif text-lg text-ink mb-1">
+              {t((d) => d.team.celebrationTitle)}
+            </p>
+            <p className="text-sm text-ink-muted">
+              {t((d) => d.team.celebrationSubtitle)}
+            </p>
+          </div>
+        )}
         {ranked.map(({ progress, stats }, index) => {
           const meta = getUserMeta(progress.userId);
           const isYou = progress.userId === currentUserId;
@@ -121,8 +136,12 @@ export default function TeamPage() {
                 >
                   {meta.emoji}
                 </div>
-                <span className="absolute -top-1.5 -start-1.5 w-5 h-5 rounded-full bg-cream-soft border border-border text-[10px] font-bold text-ink-muted flex items-center justify-center">
-                  {index + 1}
+                <span
+                  className={`absolute -top-1.5 -start-1.5 w-5 h-5 rounded-full bg-cream-soft border border-border flex items-center justify-center ${
+                    MEDALS[index] ? "text-xs" : "text-[10px] font-bold text-ink-muted"
+                  }`}
+                >
+                  {MEDALS[index] ?? index + 1}
                 </span>
               </div>
 

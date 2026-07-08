@@ -113,6 +113,8 @@ export interface Dictionary {
     subtitle: string;
     you: string;
     progressToday: string;
+    celebrationTitle: string;
+    celebrationSubtitle: string;
   };
   achievements: {
     title: string;
@@ -313,6 +315,8 @@ export const dictionaries: Record<Language, Dictionary> = {
       subtitle: "See how everyone is progressing together",
       you: "You",
       progressToday: "Today",
+      celebrationTitle: "🎉 Amazing! Everyone completed today's journey.",
+      celebrationSubtitle: "Great job, team!",
     },
     achievements: {
       title: "Awards",
@@ -545,6 +549,8 @@ export const dictionaries: Record<Language, Dictionary> = {
       subtitle: "شاهدوا كيف يتقدم الجميع معًا",
       you: "أنت",
       progressToday: "اليوم",
+      celebrationTitle: "🎉 رائع! أكمل الجميع رحلة اليوم.",
+      celebrationSubtitle: "عمل رائع أيها الفريق!",
     },
     achievements: {
       title: "الإنجازات",
