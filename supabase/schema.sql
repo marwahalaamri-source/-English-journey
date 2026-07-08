@@ -54,16 +54,41 @@ create policy "Public can update day entries"
   using (true)
   with check (true);
 
+-- ── Task progress (per user: tasks completed, XP, streak history) ─────
+create table if not exists user_progress (
+  user_id text primary key,
+  history jsonb not null default '{}'::jsonb,
+  unlocked_achievements jsonb not null default '{}'::jsonb,
+  updated_at timestamptz not null default now()
+);
+
+alter table user_progress enable row level security;
+
+create policy "Public can read user progress"
+  on user_progress for select
+  using (true);
+
+create policy "Public can upsert user progress"
+  on user_progress for insert
+  with check (true);
+
+create policy "Public can update user progress"
+  on user_progress for update
+  using (true)
+  with check (true);
+
 -- Row Level Security note: this app has no server-side auth (it's a
 -- shared profile picker, not a login system), so the anon key is used
 -- directly from the browser and these policies allow any request to
--- read/write both tables. That's an acceptable trade-off for a private
--- four-person family app, but don't reuse this exact setup for anything
--- public-facing.
+-- read/write all three tables. That's an acceptable trade-off for a
+-- private four-person family app, but don't reuse this exact setup for
+-- anything public-facing.
 
 -- ── Realtime ────────────────────────────────────────────────────────────
--- Lets posts/reactions/notes/vocab edits from one device show up live on
--- everyone else's screen without a manual refresh. Equivalent to ticking
--- both tables on: Dashboard -> Database -> Replication -> supabase_realtime.
+-- Lets posts/reactions/notes/vocab edits/task completions from one device
+-- show up live on everyone else's screen without a manual refresh.
+-- Equivalent to ticking all three tables on: Dashboard -> Database ->
+-- Replication -> supabase_realtime.
 alter publication supabase_realtime add table team_messages;
 alter publication supabase_realtime add table day_entries;
+alter publication supabase_realtime add table user_progress;

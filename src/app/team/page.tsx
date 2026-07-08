@@ -5,8 +5,14 @@ import { Flame, Sparkles } from "lucide-react";
 import { useApp } from "@/context/AppContext";
 import PageHeader from "@/components/PageHeader";
 import ProgressRing from "@/components/ProgressRing";
+import SyncStatusNotice from "@/components/SyncStatusNotice";
 import TeamWallSection from "@/components/TeamWallSection";
 import { todayStr } from "@/lib/date";
+import {
+  fetchAllRemoteProgress,
+  subscribeToAllProgress,
+  type RemoteProgressFields,
+} from "@/lib/progressSync";
 import { deriveStats } from "@/lib/selectors";
 import { loadAllProgress } from "@/lib/storage";
 import { getUserMeta } from "@/lib/users";
@@ -15,20 +21,55 @@ import type { UserProgress } from "@/lib/types";
 type TeamTab = "progress" | "wall";
 
 export default function TeamPage() {
-  const { currentUserId, t } = useApp();
+  const { currentUserId, progress: myProgress, t } = useApp();
   const [allProgress, setAllProgress] = useState<UserProgress[] | null>(null);
+  const [remoteProgress, setRemoteProgress] = useState<Record<
+    string,
+    RemoteProgressFields
+  > | null>(null);
   const [tab, setTab] = useState<TeamTab>("progress");
 
-  // Read localStorage on mount only; server has no access to it.
+  // Read localStorage on mount only; server has no access to it. This is
+  // the only source for the original single-shared-device setup (all 4
+  // profiles on one browser) and stays the fallback when Supabase isn't
+  // configured.
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setAllProgress(Object.values(loadAllProgress()));
   }, []);
 
+  // Cross-device sync: pull every teammate's latest task completions/XP
+  // from Supabase, and keep listening for live updates so a teammate
+  // completing a task on their own phone shows up here without a refresh.
+  useEffect(() => {
+    let cancelled = false;
+
+    async function load() {
+      const remote = await fetchAllRemoteProgress();
+      if (!cancelled && remote) setRemoteProgress(remote);
+    }
+    load();
+
+    const unsubscribe = subscribeToAllProgress(load);
+    return () => {
+      cancelled = true;
+      unsubscribe();
+    };
+  }, []);
+
   if (!allProgress) return null;
 
   const today = todayStr();
-  const ranked = allProgress
+  const merged = allProgress.map((local) => {
+    // My own device already has the freshest possible copy in context —
+    // no network round trip needed, and it can't be stale like a remote
+    // fetch that hasn't caught up yet.
+    if (local.userId === currentUserId && myProgress) return myProgress;
+    const remote = remoteProgress?.[local.userId];
+    if (!remote) return local;
+    return { ...local, history: remote.history, unlockedAchievements: remote.unlockedAchievements };
+  });
+  const ranked = merged
     .map((p) => ({ progress: p, stats: deriveStats(p, today) }))
     .sort((a, b) => b.stats.xp - a.stats.xp);
 
@@ -62,6 +103,7 @@ export default function TeamPage() {
         <TeamWallSection />
       ) : (
       <div className="flex flex-col gap-3">
+        <SyncStatusNotice />
         {ranked.map(({ progress, stats }, index) => {
           const meta = getUserMeta(progress.userId);
           const isYou = progress.userId === currentUserId;
@@ -109,13 +151,13 @@ export default function TeamPage() {
 
               <div className="shrink-0 flex flex-col items-center gap-1">
                 <ProgressRing
-                  percent={stats.overallCompletionPercent}
+                  percent={stats.currentDayProgressPercent}
                   size={52}
                   strokeWidth={5}
-                  label={`${stats.overallCompletionPercent}%`}
+                  label={`${stats.currentDayProgressPercent}%`}
                 />
                 <span className="text-[10px] text-ink-muted">
-                  {t((d) => d.journey.title)}
+                  {t((d) => d.team.progressToday)}
                 </span>
               </div>
             </div>

@@ -12,6 +12,7 @@ import type { ReactNode } from "react";
 import { todayStr } from "@/lib/date";
 import { computeUnlockedIds } from "@/lib/achievements";
 import { upsertDayEntry } from "@/lib/dayEntries";
+import { upsertRemoteProgress } from "@/lib/progressSync";
 import { dictionaries, interpolate, type Dictionary } from "@/lib/i18n";
 import {
   deriveStats,
@@ -159,6 +160,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
         }
         const next: UserProgress = { ...prev, history, unlockedAchievements };
         saveProgress(next);
+        // Fire-and-forget cross-device sync so the Team page can reflect
+        // this user's latest XP/streak/completion on other devices;
+        // localStorage above is the instant, offline-safe write and stays
+        // the fallback if this fails or Supabase isn't configured.
+        upsertRemoteProgress(next.userId, history, unlockedAchievements);
         return next;
       });
     },
@@ -219,6 +225,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setProgress((prev) => {
       if (!prev) return prev;
       const fresh = resetProgress(prev.userId, prev.displayName);
+      upsertRemoteProgress(fresh.userId, fresh.history, fresh.unlockedAchievements);
       return fresh;
     });
   }, []);
