@@ -1,6 +1,13 @@
 -- English Journey — Supabase schema
 -- Run this once in your Supabase project's SQL Editor
 -- (Dashboard -> SQL Editor -> New query -> paste -> Run).
+--
+-- This file is for a BRAND NEW Supabase project (creates all three tables
+-- from scratch). If you already ran an earlier version of this file
+-- (team_messages / day_entries only exist), don't re-run this whole file —
+-- the `create policy` statements below will error with "policy already
+-- exists". Instead, run supabase/migration_002_user_progress.sql, which
+-- only adds what's new and is safe to run more than once.
 
 -- ── Team Wall ──────────────────────────────────────────────────────────
 create table if not exists team_messages (

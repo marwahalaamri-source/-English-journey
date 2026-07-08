@@ -60,12 +60,20 @@ configured, the app still works but falls back to `localStorage`
 Go to [supabase.com](https://supabase.com) → New project (free tier is fine).
 
 **2. Create the tables**
-Open **SQL Editor** in your project, paste the contents of
-[`supabase/schema.sql`](./supabase/schema.sql) from this repo, and run it.
-This creates the `team_messages`, `day_entries`, and `user_progress` tables,
-sets Row Level Security policies that allow the app to read/write them with
-the public anon key, and enables Realtime so changes appear live on other
-devices.
+
+- **Brand new Supabase project (nothing set up yet):** open **SQL Editor**
+  in your project, paste the contents of
+  [`supabase/schema.sql`](./supabase/schema.sql) from this repo, and run it.
+- **Already set up `team_messages`/`day_entries` before and just need
+  Team Progress sync:** open **SQL Editor**, paste the contents of
+  [`supabase/migration_002_user_progress.sql`](./supabase/migration_002_user_progress.sql)
+  instead, and run it. Running the full `schema.sql` again would error on
+  the tables you already created.
+
+Either way, this creates the `team_messages`, `day_entries`, and
+`user_progress` tables, sets Row Level Security policies that allow the app
+to read/write them with the public anon key, and enables Realtime so
+changes appear live on other devices.
 
 **3. Get your API keys**
 Project Settings → API. You need:
