@@ -1,4 +1,5 @@
 import { getSupabaseClient, isSupabaseConfigured, withTimeout } from "./supabaseClient";
+import { normalizeUserId } from "./users";
 import type { DayRecord, UserId } from "./types";
 
 const NETWORK_TIMEOUT_MS = 8000;
@@ -26,9 +27,10 @@ function rowToFields(row: UserProgressRow): RemoteProgressFields {
   };
 }
 
-/** Reads every user's synced progress from Supabase, keyed by user id.
- * Returns null when Supabase isn't configured or the request fails —
- * callers should keep whatever they already have (e.g. localStorage). */
+/** Reads every user's synced progress from Supabase, keyed by canonical
+ * user id. Returns null when Supabase isn't configured or the request
+ * fails — callers should keep whatever they already have (e.g.
+ * localStorage). */
 export async function fetchAllRemoteProgress(): Promise<Record<
   string,
   RemoteProgressFields
@@ -41,9 +43,22 @@ export async function fetchAllRemoteProgress(): Promise<Record<
     { data: null, error: new Error("Timed out reaching Supabase") },
   );
   if (error || !data) return null;
+
+  // Key by the normalized id, not the raw column value: a stray row saved
+  // under a display-name-shaped id (e.g. "miad" instead of the canonical
+  // "meead") would otherwise read as a second, unrecognized person instead
+  // of merging into the one real profile. If more than one row normalizes
+  // to the same id, keep whichever was written most recently.
+  const latestUpdatedAt: Record<string, string> = {};
   const result: Record<string, RemoteProgressFields> = {};
   for (const row of data as UserProgressRow[]) {
-    if (row?.user_id) result[row.user_id] = rowToFields(row);
+    if (!row?.user_id) continue;
+    const canonical = normalizeUserId(row.user_id) ?? row.user_id;
+    const isNewer = !latestUpdatedAt[canonical] || row.updated_at > latestUpdatedAt[canonical];
+    if (isNewer) {
+      latestUpdatedAt[canonical] = row.updated_at;
+      result[canonical] = rowToFields(row);
+    }
   }
   return result;
 }
@@ -61,8 +76,14 @@ export async function fetchRemoteProgressForUser(
     NETWORK_TIMEOUT_MS,
     { data: null, error: new Error("Timed out reaching Supabase") },
   );
-  if (error || !data) return null;
-  return rowToFields(data as UserProgressRow);
+  if (!error && data) return rowToFields(data as UserProgressRow);
+
+  // No row under the exact canonical id — fall back to scanning every row
+  // for one that normalizes to it (e.g. a row saved under "miad" instead
+  // of the canonical "meead"), so a stray alias row doesn't strand this
+  // user's real progress somewhere this device would never look.
+  const all = await fetchAllRemoteProgress();
+  return all?.[userId] ?? null;
 }
 
 /** Upserts one user's full progress snapshot to Supabase.

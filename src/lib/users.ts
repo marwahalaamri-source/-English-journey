@@ -20,14 +20,37 @@ export function getUserMeta(id: UserId): UserMeta {
   return user;
 }
 
+const DISPLAY_NAME_TO_ID: Record<string, UserId> = Object.fromEntries(
+  USERS.map((u) => [u.name.toLowerCase(), u.id]),
+);
+
 /**
- * Same lookup, but never throws. Use this for data sourced from Supabase
- * (Team Wall messages, day entries) — the RLS policy allows inserting any
- * user_id string, so it can't be trusted to always match one of the 4
- * known profiles (e.g. a manually-added test row in the Table Editor).
+ * Maps a raw, untrusted id string (e.g. a Supabase row's user_id) to one of
+ * the 4 known canonical ids, or null if it doesn't match anything. Matches
+ * case-insensitively against both the id itself and each user's display
+ * name — Miad's canonical id is "meead" (kept for storage-key stability
+ * when she was renamed from "Meead"), so a stray row saved as "miad" or
+ * "Miad" (e.g. hand-typed into the Supabase Table Editor, where only the
+ * display name is visible) would otherwise silently read as a different,
+ * unrecognized person instead of the same one.
+ */
+export function normalizeUserId(rawId: string): UserId | null {
+  const lower = rawId.trim().toLowerCase();
+  if (!lower) return null;
+  const byId = USERS.find((u) => u.id === lower);
+  if (byId) return byId.id;
+  return DISPLAY_NAME_TO_ID[lower] ?? null;
+}
+
+/**
+ * Same lookup as getUserMeta, but never throws and normalizes aliases (see
+ * normalizeUserId) before falling back. Use this for data sourced from
+ * Supabase (Team Wall messages, day entries) — the RLS policy allows
+ * inserting any user_id string, so it can't be trusted to always match one
+ * of the 4 known profiles verbatim.
  */
 export function getUserMetaOrFallback(id: string): UserMeta {
-  const user = USERS.find((u) => u.id === id);
-  if (user) return user;
+  const canonical = normalizeUserId(id);
+  if (canonical) return getUserMeta(canonical);
   return { id: id as UserId, name: id || "?", color: "#CBBFA8", emoji: "❓" };
 }

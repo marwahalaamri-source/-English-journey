@@ -75,6 +75,17 @@ Either way, this creates the `team_messages`, `day_entries`, and
 to read/write them with the public anon key, and enables Realtime so
 changes appear live on other devices.
 
+**If Miad's progress ever looks split into two different profiles:**
+Miad's internal id has always been `meead` (kept from before she was
+renamed from "Meead" to "Miad" in the UI, so old data wouldn't break), but
+Supabase's policies allow any `user_id` string, so a row hand-typed into
+the Table Editor (which only shows the display name "Miad", not the
+internal id) could get saved as `miad` instead — reading as a second,
+unrecognized person. Run
+[`supabase/migration_003_fix_miad_user_id.sql`](./supabase/migration_003_fix_miad_user_id.sql)
+once to merge any such stray rows back into the real Miad and delete the
+duplicates. Safe to run more than once.
+
 **3. Get your API keys**
 Project Settings → API. You need:
 - **Project URL**
