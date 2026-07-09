@@ -23,7 +23,7 @@ type TeamTab = "progress" | "wall";
 const MEDALS = ["🥇", "🥈", "🥉"];
 
 export default function TeamPage() {
-  const { currentUserId, progress: myProgress, t } = useApp();
+  const { currentUserId, t } = useApp();
   const [allProgress, setAllProgress] = useState<UserProgress[] | null>(null);
   const [remoteProgress, setRemoteProgress] = useState<Record<
     string,
@@ -62,11 +62,14 @@ export default function TeamPage() {
   if (!allProgress) return null;
 
   const today = todayStr();
+  // Every row — including the signed-in user's own — reads from the exact
+  // same source: Supabase once it has answered, falling back to this
+  // device's localStorage snapshot until then (or permanently, if Supabase
+  // isn't configured). Deliberately NOT special-casing "my" row to the
+  // live AppContext copy here: that was the bug — it let this device's own
+  // possibly-stale local state disagree with what every other device reads
+  // for the same person from Supabase.
   const merged = allProgress.map((local) => {
-    // My own device already has the freshest possible copy in context —
-    // no network round trip needed, and it can't be stale like a remote
-    // fetch that hasn't caught up yet.
-    if (local.userId === currentUserId && myProgress) return myProgress;
     const remote = remoteProgress?.[local.userId];
     if (!remote) return local;
     return { ...local, history: remote.history, unlockedAchievements: remote.unlockedAchievements };

@@ -48,6 +48,23 @@ export async function fetchAllRemoteProgress(): Promise<Record<
   return result;
 }
 
+/** Reads a single user's synced progress from Supabase. Returns null when
+ * Supabase isn't configured, the row doesn't exist yet, or the request
+ * fails — callers should keep whatever they already have. */
+export async function fetchRemoteProgressForUser(
+  userId: UserId,
+): Promise<RemoteProgressFields | null> {
+  if (!isSupabaseConfigured()) return null;
+  const supabase = getSupabaseClient()!;
+  const { data, error } = await withTimeout(
+    supabase.from(TABLE).select("*").eq("user_id", userId).maybeSingle(),
+    NETWORK_TIMEOUT_MS,
+    { data: null, error: new Error("Timed out reaching Supabase") },
+  );
+  if (error || !data) return null;
+  return rowToFields(data as UserProgressRow);
+}
+
 /** Upserts one user's full progress snapshot to Supabase.
  * No-ops when Supabase isn't configured — the caller's localStorage write
  * is the only persistence in that case. */
@@ -91,6 +108,36 @@ export function subscribeToAllProgress(onChange: () => void): () => void {
       "postgres_changes",
       { event: "*", schema: "public", table: TABLE },
       () => onChange(),
+    )
+    .subscribe();
+
+  return () => {
+    supabase.removeChannel(channel);
+  };
+}
+
+/**
+ * Subscribes to live updates for one specific user's row — used so the
+ * signed-in user's own progress reconciles with Supabase if it changed on
+ * another of their own devices, instead of this session's local copy
+ * silently drifting out of sync forever. Returns an unsubscribe function.
+ * No-ops when Supabase isn't configured.
+ */
+export function subscribeToUserProgress(
+  userId: UserId,
+  onChange: (fields: RemoteProgressFields) => void,
+): () => void {
+  if (!isSupabaseConfigured()) return () => {};
+  const supabase = getSupabaseClient()!;
+  const channel = supabase
+    .channel(`user_progress_self_${userId}_${Math.random().toString(36).slice(2)}`)
+    .on(
+      "postgres_changes",
+      { event: "*", schema: "public", table: TABLE, filter: `user_id=eq.${userId}` },
+      (payload) => {
+        const row = payload.new as Partial<UserProgressRow> | undefined;
+        if (row) onChange(rowToFields(row as UserProgressRow));
+      },
     )
     .subscribe();
 

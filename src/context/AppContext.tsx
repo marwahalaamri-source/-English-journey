@@ -12,7 +12,11 @@ import type { ReactNode } from "react";
 import { todayStr } from "@/lib/date";
 import { computeUnlockedIds } from "@/lib/achievements";
 import { upsertDayEntry } from "@/lib/dayEntries";
-import { upsertRemoteProgress } from "@/lib/progressSync";
+import {
+  fetchRemoteProgressForUser,
+  subscribeToUserProgress,
+  upsertRemoteProgress,
+} from "@/lib/progressSync";
 import { dictionaries, interpolate, type Dictionary } from "@/lib/i18n";
 import {
   deriveStats,
@@ -211,6 +215,54 @@ export function AppProvider({ children }: { children: ReactNode }) {
     },
     [],
   );
+
+  // Same idea as applyRemoteDayJournal, but for the whole progress blob:
+  // local state/localStorage only, never re-uploads (that would echo the
+  // write straight back to Supabase and loop).
+  const applyRemoteProgress = useCallback(
+    (history: Record<number, DayRecord>, unlockedAchievements: Record<string, string>) => {
+      setProgress((prev) => {
+        if (!prev) return prev;
+        const next: UserProgress = { ...prev, history, unlockedAchievements };
+        saveProgress(next);
+        return next;
+      });
+    },
+    [],
+  );
+
+  // Reconciles this device's copy of the signed-in user's own progress with
+  // Supabase. Without this, only *other* users' Team page rows ever read
+  // from Supabase — this device's own row could keep showing whatever was
+  // last saved locally (e.g. before this same person used a different
+  // phone), permanently disagreeing with what everyone else sees for them.
+  // Runs once when a profile is picked/hydrated, then keeps listening so a
+  // change made on another of this person's own devices catches up here
+  // too. A local edit made *after* this effect's initial fetch is safe:
+  // toggleTask/updateDayJournal always write through to Supabase, so any
+  // later echo received here reflects that same edit, not a rollback.
+  useEffect(() => {
+    if (!mounted || !currentUserId) return;
+    const userId = currentUserId;
+    let cancelled = false;
+
+    async function syncFromRemote() {
+      const remote = await fetchRemoteProgressForUser(userId);
+      if (!cancelled && remote) {
+        applyRemoteProgress(remote.history, remote.unlockedAchievements);
+      }
+    }
+    syncFromRemote();
+
+    const unsubscribe = subscribeToUserProgress(userId, (remote) => {
+      if (!cancelled) applyRemoteProgress(remote.history, remote.unlockedAchievements);
+    });
+
+    return () => {
+      cancelled = true;
+      unsubscribe();
+    };
+  }, [mounted, currentUserId, applyRemoteProgress]);
 
   const updateDisplayName = useCallback((name: string) => {
     setProgress((prev) => {
